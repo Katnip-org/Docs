@@ -45,7 +45,7 @@ This follows Scratch exactly:
 | --- | --- |
 | Top-level `public` / `private` variable | **No** — one copy on the stage |
 | Sprite `private` variable | **Yes** — each clone gets its own |
-| `temp` inside a proc | **No** — a mangled global, shared by everything |
+| `private` declared inside a proc | **No** — a mangled global, shared by everything |
 
 So per-clone state goes in a sprite member:
 
@@ -64,9 +64,9 @@ sprite Star {
 ```
 
 {% hint style="warning" %}
-`temp` is a global. If two clones run the same procedure at once, they share its `temp`
-variables and will corrupt each other. In clone-heavy code, pass values as parameters and
-keep per-clone state in sprite members.
+A variable declared inside a proc is a global. If two clones run the same procedure at
+once, they share its variables and will corrupt each other. In clone-heavy code, pass
+values as parameters and keep per-clone state in sprite members.
 {% endhint %}
 
 ## Limits

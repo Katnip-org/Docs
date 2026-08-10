@@ -101,7 +101,7 @@ proc drift() -> void {
 To read *another* sprite's position, go through sensing:
 
 ```katnip
-temp cx: num = sensing.getProperty("x position", "Cat");
+private cx: num = sensing.getProperty("x position", "Cat");
 ```
 
 ## Full enum reference

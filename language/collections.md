@@ -15,7 +15,7 @@ public empty: list<num> = [];
 Scratch lists are **1-indexed**, and so are Katnip's.
 
 ```katnip
-temp first: num = scores[1];
+private first: num = scores[1];
 scores[2] = scores[2] + 1;
 scores[2] += 1;              # compound assignment through an index
 ```
@@ -25,9 +25,9 @@ scores[2] += 1;              # compound assignment through an index
 ```katnip
 scores.add(7);                       # append
 scores.clear();                      # delete all
-temp n: num = scores.length();
-temp has: bool = scores.contains(4);
-temp at: num = scores.indexOf(5);    # 0 if absent
+private n: num = scores.length();
+private has: bool = scores.contains(4);
+private at: num = scores.indexOf(5);    # 0 if absent
 scores.show();                       # show the list monitor
 scores.hide();
 ```
@@ -61,7 +61,7 @@ public stock: dict<str, num> = {"apple": 2, "banana": 5};
 ### Reading and writing
 
 ```katnip
-temp apples: num = stock["apple"];
+private apples: num = stock["apple"];
 stock["cherry"] = 7;        # key missing → appended
 stock["apple"] = 3;         # key present → replaced in place
 stock["apple"] += 1;
@@ -93,7 +93,7 @@ a handler is not lowered:
 
 ```katnip
 proc bad() -> void {
-    temp working: list<num> = [];   # NOT lowered
+    private working: list<num> = [];   # NOT lowered
 }
 
 public working: list<num> = [];     # do this instead
@@ -126,9 +126,9 @@ than racing it.
 ## Strings behave like sequences
 
 ```katnip
-temp c: str = greeting[1];            # 1-based, operator_letter_of
-temp n: num = len(greeting);
-temp has: bool = greeting.contains("at");
+private c: str = greeting[1];            # 1-based, operator_letter_of
+private n: num = len(greeting);
+private has: bool = greeting.contains("at");
 
 for (letter, greeting) { ... }
 ```
@@ -138,16 +138,16 @@ There is no slicing. `s[1:5:2]` parses and gets a naive type, but has no lowerin
 ## Generic helpers
 
 ```katnip
-temp paired: (list<str>, list<num>) = zip(names, powers);
-temp tagged: (list<num>, list<str>) = enumerate(names);
+private paired: (list<str>, list<num>) = zip(names, powers);
+private tagged: (list<num>, list<str>) = enumerate(names);
 ```
 
-The types infer correctly — `T` binds from the arguments. But `zip` and `enumerate` are
-`katnip_*` builtins with **no codegen**, so they type-check and then fail the build. Walk
-by index instead:
+The types infer correctly — `T` binds from the arguments. As *values* both are `katnip_*`
+builtins with **no codegen**, so the two declarations above type-check and then fail the
+build. In a `for` header they do work, because the loop walks the lists by index instead
+of building the pair:
 
 ```katnip
-for (i, names.length()) {
-    report(names[i], powers[i]);
-}
+for ((name, power), zip(names, powers)) { report(name, power); }
+for ((i, name), enumerate(names)) { report(i, name); }
 ```

@@ -48,7 +48,7 @@ match.
 Members fold to compile-time constants, so they cost nothing at runtime:
 
 ```katnip
-temp pick: Fruit = Fruit.banana;
+private pick: Fruit = Fruit.banana;
 
 if (pick == Fruit.apple) { ... }
 
@@ -86,7 +86,7 @@ A **literal** whose value is one of an enum's member values is assignable to tha
 ```katnip
 enum Team { red = "R", blue = "B" }
 
-temp t: Team = "R";          # same as Team.red
+private t: Team = "R";          # same as Team.red
 ```
 
 Both forms fold to the identical value, so they emit identical blocks. This is what makes
@@ -114,9 +114,9 @@ whose members are implicit, that means the qualified string:
 ```katnip
 enum Fruit { apple, banana }
 
-temp f: Fruit = "Fruit.apple";   # ✅ but nobody writes this
-temp g: Fruit = "apple";         # error: not a value of enum 'Fruit'
-temp h: Fruit = Fruit.apple;     # ✅ write this
+private f: Fruit = "Fruit.apple";   # ✅ but nobody writes this
+private g: Fruit = "apple";         # error: not a value of enum 'Fruit'
+private h: Fruit = Fruit.apple;     # ✅ write this
 ```
 
 So coercion is really for enums with explicit values — which is every enum that feeds a
@@ -127,7 +127,7 @@ Only a **literal** coerces. A variable, a call, or a concatenation of the backin
 rejected, and there is no `Enum(x)` cast to force one:
 
 ```katnip
-temp attr: str = "color";
+private attr: str = "color";
 pen.setAttr(attr, 10);       # error: expects one of its members here, not a computed 'str'
 ```
 
@@ -179,14 +179,14 @@ Struct literals take **named fields only** — positional arguments are an error
 defaults may be omitted:
 
 ```katnip
-temp p: Point = Point(x = 1, y = 2);
-temp c: Cfg   = Cfg(a = 5);            # b = 2
+private p: Point = Point(x = 1, y = 2);
+private c: Cfg   = Cfg(a = 5);            # b = 2
 ```
 
 ### Field access
 
 ```katnip
-temp a: num = p.x;
+private a: num = p.x;
 p.x = 10;
 ```
 
@@ -195,9 +195,9 @@ p.x = 10;
 A `list<Point>` supports both element access and whole-column access:
 
 ```katnip
-temp ps: list<Point> = [];
-temp one: num = ps[1].x;        # one element's field
-temp col: list<num> = ps.x;     # every element's x, as a list
+private ps: list<Point> = [];
+private one: num = ps[1].x;        # one element's field
+private col: list<num> = ps.x;     # every element's x, as a list
 ```
 
 ### Rules

@@ -160,14 +160,14 @@ expect.
   first element and there is no destructuring on the receiving side. See
   [Known gaps](../reference/known-gaps.md#tuple-returns-read-only-the-first-slot).
 
-## Recursion and `temp`
+## Recursion and variables declared inside a procedure
 
-Return values survive recursion. `temp` variables do **not** — a `temp` is a mangled
-global, and the inner call overwrites it.
+Return values survive recursion. Variables declared inside a procedure do **not** — such
+a variable is a mangled global, and the inner call overwrites it.
 
 ```katnip
 proc bad(n: num) -> num {
-    temp half: num = n / 2;      # clobbered by the recursive call below
+    private half: num = n / 2;   # clobbered by the recursive call below
     if (n <= 1) { return 1; }
     return bad(half) + half;     # `half` is now the inner call's value
 }

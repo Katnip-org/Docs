@@ -13,7 +13,7 @@ math.tau    6.283185307179586
 These fold to their literal value at compile time, so they cost nothing at runtime:
 
 ```katnip
-temp turns: num = math.pi * 2;
+private turns: num = math.pi * 2;
 motion.forward(10 * math.pi);
 ```
 
@@ -31,7 +31,7 @@ Write it out:
 
 ```katnip
 proc pow(base: num, exp: num) -> num {
-    temp result: num = 1;
+    private result: num = 1;
     for (i, exp) {
         result = result * base;
     }
@@ -46,7 +46,7 @@ yourself:
 ```katnip
 proc mathop(@opcode = "operator_mathop", operator: str, num: num) -> num {}
 
-temp root: num = mathop("sqrt", 16);
+private root: num = mathop("sqrt", 16);
 ```
 
 {% hint style="info" %}
@@ -64,7 +64,7 @@ all of these; the stdlib has not wrapped them. Bind the opcodes directly:
 proc random(@opcode = "operator_random", from: num, to: num) -> num {}
 proc round(@opcode = "operator_round", value: num) -> num {}
 
-temp roll: num = random(1, 6);
+private roll: num = random(1, 6);
 ```
 
 ## console
@@ -107,7 +107,7 @@ proc log(msg: str) -> void {
 
 ```katnip
 sensing.ask("What is your name?");
-temp name: str = sensing.answer();
+private name: str = sensing.answer();
 looks.say(f"Welcome, {name}!", 2);
 ```
 

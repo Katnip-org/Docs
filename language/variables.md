@@ -1,38 +1,50 @@
 # Variables
 
 Every variable declaration carries an **access modifier**. There is no bare `let` or
-`var` — the modifier is how you say where the variable lives and who can see it.
+`var` — the modifier is how you say where the variable lives.
 
-| Modifier | Visible to | Lives on |
+| Modifier | Lives on | Visible to |
 | --- | --- | --- |
-| `public` | this file, and other files that import it | stage or sprite |
-| `private` | this file only | stage or sprite |
-| `temp` | this scope only *(see the warning below)* | a mangled global |
+| `public` | the stage | every sprite, and other files that import this one |
+| `private` | whatever encloses the declaration | that sprite, or that file |
+
+If you have used Scratch's variable dialog, you already know this pair: `public` is
+**For all sprites**, `private` is **For this sprite only**. You pick when you declare it,
+from wherever you happen to be writing.
 
 ```katnip
 public score: num = 0;
 private secret: num = 42;
 
 proc tally() -> void {
-    temp running: num = 0;
+    private running: num = 0;
     running += score;
 }
 ```
 
 ## Where a declaration puts the variable
 
-**Top level** → a stage-owned global, visible from every sprite:
+**The modifier decides, not the position.** `public` puts the variable on the stage from
+anywhere — the top level, a sprite body, even inside a script:
 
 ```katnip
-public score: num = 0;          # "score" on the stage
+public score: num = 0;              # "score" on the stage
+
+sprite Cat {
+    public highScore: num = 0;      # also on the stage, declared next to the code using it
+    private lives: num = 9;         # "lives" on Cat, and only Cat
+}
 ```
 
-**Inside a sprite** → a sprite-owned member, visible only within that sprite:
+**Position decides what "private" encloses.** At the top level there is no sprite, so a
+`private` declaration is a stage variable that other files cannot import. Inside a sprite
+it is that sprite's own; inside a script or proc body it belongs to the sprite around it.
+
+Two sprites cannot both claim one stage name — the second declaration is an error:
 
 ```katnip
-sprite Cat {
-    private lives: num = 9;     # "lives" on Cat
-}
+sprite Cat { public score: num = 0; }
+sprite Dog { public score: num = 1; }   # error: 'score' is already declared in this scope
 ```
 
 If a sprite member shares a name with a global, Scratch cannot represent the collision —
@@ -57,14 +69,15 @@ sprite Dog {
 }
 ```
 
-## `temp` is not a local
+## A variable declared inside a procedure is not a local
 
-`temp` is the closest thing Katnip has to a local variable, and it is important to
-understand what it actually is: **a global with a mangled name**.
+A variable declared inside a procedure is the closest thing Katnip has to a local
+variable, and it is important to understand what it actually is: **a global with a
+mangled name**.
 
 ```katnip
 proc tally() -> void {
-    temp running: num = 0;
+    private running: num = 0;
     running += 1;
 }
 ```
@@ -73,13 +86,13 @@ That emits one Scratch variable, reused by every call. Scratch has no call-frame
 so there is nowhere else to put it.
 
 {% hint style="warning" %}
-**A `temp` does not survive recursion.** If a procedure calls itself, the inner call
-overwrites the outer call's `temp` and the outer call resumes with the wrong value. This
+**It does not survive recursion.** If a procedure calls itself, the inner call
+overwrites the outer call's variable and the outer call resumes with the wrong value. This
 is by design — it is what Scratch can do — but it will bite you.
 
 Return values *do* survive recursion; the compiler gives recursive procedures a stack.
 See [Returning values](procedures.md#returning-values). Prefer passing state through
-parameters and returns over `temp` in any procedure that might recurse.
+parameters and returns in any procedure that might recurse.
 {% endhint %}
 
 ## Assignment
