@@ -44,7 +44,7 @@ Prefer `while` when the first iteration does not need to be unconditional.
 
 ## for
 
-Katnip's `for` takes a binding and something to walk. There are six things it can walk.
+Katnip's `for` takes a binding and something to walk. There are five things it can walk.
 
 ### A counter
 
@@ -67,11 +67,6 @@ for (n, range(2, 10, 2)) {
 
 `range(stop)` or `range(start, stop, step)`. The range is folded into the loop counter,
 with constant folding when the bounds are literals — no list is ever built.
-
-`range` is **1-based and stop-inclusive**, matching Scratch's own counter rather than
-Python's: `range(5)` yields `1 2 3 4 5`, and the loop above walks `2 4 6 8 10`. A negative
-step counts down, so `range(5, 1, -1)` yields `5 4 3 2 1`, and an empty range simply runs
-zero times.
 
 ### A list
 
@@ -105,29 +100,6 @@ for ((name, count), stock) {
 
 Binds the key and the value together, walking the keys and values columns in step. The
 double parentheses are the tuple pattern — see [Lists and dicts](collections.md).
-
-### A zip() or enumerate() pair
-
-```katnip
-for ((flower, thing), zip(flowers, things)) {
-    report(flower, thing);
-}
-
-for ((i, val), enumerate(flowers)) {
-    report(i, val);
-}
-```
-
-Neither helper builds the paired lists it describes. The loop counter is the index, and
-each part is read out of its own list per iteration. `enumerate` gives a 1-based index,
-which is the counter itself and therefore free.
-
-`zip` runs `l1.length()` times — the first list sets the count. A shorter second list reads
-empty past its end, the way `item (7) of` does in Scratch, so pass the shorter list first
-if the lengths can differ.
-
-Both take declared lists. With a single binding instead of a tuple pattern you get the
-first column — the `zip` element, or the `enumerate` index.
 
 ## switch
 

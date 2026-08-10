@@ -169,7 +169,7 @@ Handlers are independent scripts. Add one for the space bar:
         motion.goTo(0, 0);
         motion.point(90);
 
-        private length: num = 5;
+        temp length: num = 5;
         pen.down();
         for (step, 60) {
             motion.forward(length);
@@ -182,11 +182,10 @@ Handlers are independent scripts. Add one for the space bar:
 
 Rebuild, run, press space. A spiral — because 89° never quite closes the shape.
 
-A variable declared inside a procedure or handler is Katnip's closest thing to a local
-variable. It is worth knowing now what it actually is: **a global with a mangled name**.
-Scratch has no per-call storage, so there is nowhere else to put it. It works fine here,
-and it will quietly break if you ever use one in a recursive procedure. See
-[Variables](../language/variables.md#a-variable-declared-inside-a-procedure-is-not-a-local).
+`temp` is Katnip's closest thing to a local variable. It is worth knowing now what it
+actually is: **a global with a mangled name**. Scratch has no per-call storage, so there is
+nowhere else to put it. It works fine here, and it will quietly break if you ever use one
+in a recursive procedure. See [Variables](../language/variables.md#temp-is-not-a-local).
 
 ## The finished file
 
@@ -218,7 +217,7 @@ sprite Turtle {
         pen.clear();
         motion.goTo(0, 0);
         motion.point(90);
-        private length: num = 5;
+        temp length: num = 5;
         pen.down();
         for (step, 60) {
             motion.forward(length);

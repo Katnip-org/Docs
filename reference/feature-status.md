@@ -61,15 +61,13 @@ write instead" version, see [Known gaps](known-gaps.md).
 
 ## Declarations
 
-* 🟢 **Variables** — `public` and `private` access modifiers, with or without a
+* 🟢 **Variables** — `public`, `private`, and `temp` access modifiers, with or without a
   type annotation.
-  * 🟢 The modifier picks the owner, wherever the declaration is written: `public` is
-    stage-owned and visible to every sprite, `private` belongs to whatever encloses it.
-    Two sprites claiming one `public` name is an error.
+  * 🟢 Top-level variables become stage-owned globals, visible from every sprite.
   * 🟢 Sprite members shadowing a global are renamed `Sprite_name` at codegen, since Scratch
     cannot represent the collision.
-  * 🟢 A variable declared inside a proc becomes a mangled global; scope-less by design, so
-    recursion still clobbers it.
+  * 🟢 `temp` inside a proc becomes a mangled global; scope-less by design, so recursion
+    still clobbers it.
 * 🟢 **Procedures** — `proc name(params) -> Type { ... }`, with bodies lowered into
   `procedures_definition` blocks.
   * 🟢 Overloading by parameter list; dispatch resolved by argument types.
@@ -102,12 +100,7 @@ write instead" version, see [Known gaps](known-gaps.md).
 * 🟢 **`for` over a dict** — `for ((key, value), d)` walks the keys and values columns
   together.
 * 🟢 **`for` over `range()`** — folded into the loop counter with constant folding on
-  literal `start`/`stop`/`step`, never built as a list. 1-based and stop-inclusive like
-  Scratch's own counter, so `range(5)` yields `1 2 3 4 5`.
-* 🟢 **`for` over `zip()` / `enumerate()`** — `for ((a, b), zip(l1, l2))` walks both lists
-  under one counter, `l1.length()` times; `for ((i, v), enumerate(l))` reuses the 1-based
-  counter as the index. Neither builds the paired lists.
-  * 🟡 `zip` does not stop at the shorter list; a shorter `l2` reads empty past its end.
+  literal `start`/`stop`/`step`, never built as a list.
 * 🟢 **`switch` / `case` / `default`** — lowers to an if/else chain; a case can hold several
   values.
   * 🟢 Case labels are checked against the switch value's type, so a label on an
@@ -243,10 +236,9 @@ the compiler cannot enumerate — `Target`, `TouchTarget`, `DistanceTarget`, `Ob
 * 🔴 **`dict`** — `contains`, `length`, `keys`, `values`, `merge` all resolve to `katnip_*`
   opcodes with no codegen metadata.
 * 🔴 **`console`** — `log`, `warn`, `error` are `katnip_*`; `input` is a yields proc.
-* 🔴 **Casts and helpers** — `Num`, `Str`, `Bool`, `List`, `typeof`, `motion.getPosition`,
-  and `range()`/`zip()`/`enumerate()` used *as a value* all type-check but have no codegen
-  metadata; using one throws `no slot metadata`. In a `for` header the three iter helpers
-  are 🟢 — they are folded into the loop, never built.
+* 🔴 **Casts and helpers** — `Num`, `Str`, `Bool`, `List`, `typeof`, `zip`, `enumerate`,
+  `motion.getPosition`, and `range()` used as a value all type-check but have no codegen
+  metadata; using one throws `no slot metadata`.
 
 {% hint style="info" %}
 Every enum-typed parameter above is reachable two ways: the namespaced member

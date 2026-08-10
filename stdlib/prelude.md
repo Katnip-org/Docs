@@ -107,30 +107,25 @@ range(start: num, stop: num, step: num = 1) -> list<num>  ✅ in a for header
 for (n, range(2, 10, 2)) { ... }
 ```
 
-`range` in a `for` header is folded into the loop counter and never built as a list. It is
-1-based and stop-inclusive, like Scratch's own counter: `range(5)` yields `1 2 3 4 5`, and
-the loop above walks `2 4 6 8 10`. The header is the only place it works — `range()` used
-as a value has no codegen:
+`range` in a `for` header is folded into the loop counter and never built as a list. That
+is the only place it works — `range()` used as a value has no codegen:
 
 ```katnip
-private xs: list<num> = range(5);      # ⛔ no slot metadata
+temp xs: list<num> = range(5);      # ⛔ no slot metadata
 ```
 
 ```katnip
-zip(l1: list<T>, l2: list<U>) -> (list<T>, list<U>)     ✅ in a for header
-enumerate(items: list<T>) -> (list<num>, list<T>)       ✅ in a for header
+zip(l1: list<T>, l2: list<U>) -> (list<T>, list<U>)     ⛔
+enumerate(items: list<T>) -> (list<num>, list<T>)       ⛔
 ```
 
-Like `range`, both are folded into the loop rather than built. `zip` walks both lists under
-one counter, running `l1.length()` times — a shorter `l2` reads empty past its end.
-`enumerate` reuses the 1-based counter as the index, so it costs no block at all:
+Both infer their return types correctly and then fail codegen. Walk by index instead:
 
 ```katnip
-for ((name, power), zip(names, powers)) { report(name, power); }
-for ((i, name), enumerate(names)) { report(i, name); }
+for (i, names.length()) {
+    report(names[i], powers[i]);
+}
 ```
-
-Used as a value — assigned to a variable, passed to a proc — both still fail codegen.
 
 ## Casts
 
@@ -148,7 +143,7 @@ All five resolve to `katnip_*` opcodes with no codegen metadata. Using one throw
 For `num` → `str`, an interpolated string works today and lowers to `join`:
 
 ```katnip
-private s: str = f"{count}";
+temp s: str = f"{count}";
 ```
 
 Scratch coerces at runtime anyway, so most casts are only about satisfying the type

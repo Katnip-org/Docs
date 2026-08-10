@@ -26,7 +26,7 @@ The last one is the only genuinely dangerous kind, and there is exactly one inst
 🔴 **Worst gap on this page.**
 
 ```katnip
-private x: num = base ** 2;      # compiles, produces an empty literal
+temp x: num = base ** 2;      # compiles, produces an empty literal
 ```
 
 Scratch has no power block, and Katnip has no `builds` procedure for `**` yet, so the IR
@@ -37,7 +37,7 @@ lowers it to an empty literal. **No error is reported.** `**=` has the same gap,
 
 ```katnip
 proc pow(base: num, exp: num) -> num {
-    private result: num = 1;
+    temp result: num = 1;
     for (i, exp) {
         result = result * base;
     }
@@ -49,7 +49,7 @@ For fractional powers, bind `operator_mathop`:
 
 ```katnip
 proc mathop(@opcode = "operator_mathop", operator: str, num: num) -> num {}
-private root: num = mathop("sqrt", 16);
+temp root: num = mathop("sqrt", 16);
 ```
 
 ---
@@ -93,7 +93,7 @@ no `Enum(x)` escape hatch to force one:
 ```katnip
 pen.setAttr(pen.ColorParam.COLOR, 10);   # ✅ member
 pen.setAttr("color", 10);                # ✅ literal, coerced
-private attr: str = "color";
+temp attr: str = "color";
 pen.setAttr(attr, 10);                   # 🔴 "expects one of its members here, not a computed 'str'"
 ```
 
@@ -126,7 +126,8 @@ or not.
 | `console.input` | `sensing.ask` + `sensing.answer` |
 | `Num()`, `Str()`, `Bool()`, `List()` | `f"{value}"` for `num` → `str`; annotate `any` elsewhere |
 | `typeof()` | — |
-| `zip()`, `enumerate()`, `range()` **as values** | use them in a `for` header instead — there they are folded into the loop counter |
+| `zip()`, `enumerate()` | walk by index |
+| `range()` **as a value** | `range()` in a `for` header works — that is folded into the counter |
 | every `dict` method | keep a parallel key list |
 | `list.merge` | `for (x, other) { self.add(x); }` |
 | `motion.getPosition` | bind `motion_xposition` / `motion_yposition` yourself |
@@ -198,7 +199,7 @@ a proc or a handler produces nothing.
 
 ```katnip
 proc bad() -> void {
-    private working: list<num> = [];   # not lowered
+    temp working: list<num> = [];   # not lowered
 }
 ```
 

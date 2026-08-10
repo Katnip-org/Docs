@@ -12,7 +12,7 @@
 | `-x` | negate | `operator_subtract` from 0 |
 
 ```katnip
-private total: num = (a + b) * 2 % 10;
+temp total: num = (a + b) * 2 % 10;
 ```
 
 ## Comparison
@@ -62,7 +62,7 @@ So you can write the natural thing and the compiler produces a shape Scratch acc
 `+` on strings lowers to `operator_join`:
 
 ```katnip
-private label: str = "score: " + name;
+temp label: str = "score: " + name;
 ```
 
 ### Interpolated strings
@@ -77,7 +77,7 @@ This folds into a right-nested `join` chain. It is also, today, the most practic
 turn a `num` into a `str`, because the `Str()` cast is not lowered yet:
 
 ```katnip
-private s: str = f"{count}";
+temp s: str = f"{count}";
 ```
 
 An interpolation is a full expression, and it may contain strings — of either quote style,
@@ -97,9 +97,9 @@ swallowing the rest of the file.
 ### String indexing and length
 
 ```katnip
-private first: str = greeting[1];      # operator_letter_of — 1-based
-private n: num = len(greeting);        # operator_length
-private has: bool = greeting.contains("at");
+temp first: str = greeting[1];      # operator_letter_of — 1-based
+temp n: num = len(greeting);        # operator_length
+temp has: bool = greeting.contains("at");
 ```
 
 Scratch strings are **1-indexed**, and so are Katnip's.
@@ -111,19 +111,18 @@ Two things are resolved before any block is emitted:
 **Enum members** fold to constants:
 
 ```katnip
-private pick: Fruit = Fruit.banana;    # the literal "Fruit.banana"
-private side: Team = Team.red;         # the literal "R"
+temp pick: Fruit = Fruit.banana;    # the literal "Fruit.banana"
+temp side: Team = Team.red;         # the literal "R"
 ```
 
 **Namespace constants** fold to their literal value:
 
 ```katnip
-private turns: num = math.pi * 2;      # 3.141592653589793 * 2
+temp turns: num = math.pi * 2;      # 3.141592653589793 * 2
 ```
 
 `range()` in a `for` header is folded into the loop counter, with constant folding on
-literal `start` / `stop` / `step`. It is never built as a list. `zip()` and `enumerate()`
-fold the same way — see [Control flow](control-flow.md#a-zip-or-enumerate-pair).
+literal `start` / `stop` / `step`. It is never built as a list.
 
 ## Precedence
 
@@ -146,7 +145,7 @@ either way.
 ## `**` does not work
 
 ```katnip
-private x: num = base ** 2;    # DO NOT USE
+temp x: num = base ** 2;    # DO NOT USE
 ```
 
 The `**` operator parses and type-checks, but Scratch has no power block and Katnip has no
@@ -157,7 +156,7 @@ For a whole-number exponent, write the multiplication out or use a loop:
 
 ```katnip
 proc pow(base: num, exp: num) -> num {
-    private result: num = 1;
+    temp result: num = 1;
     for (i, exp) {
         result = result * base;
     }
@@ -166,7 +165,6 @@ proc pow(base: num, exp: num) -> num {
 ```
 
 {% hint style="warning" %}
-The `result` above, declared inside the procedure, is clobbered by recursion — but this
-`pow` does not recurse, so it is safe. See
-[Variables](variables.md#a-variable-declared-inside-a-procedure-is-not-a-local).
+The `temp result` above is clobbered by recursion — but this `pow` does not recurse, so it
+is safe. See [Variables](variables.md#temp-is-not-a-local).
 {% endhint %}
