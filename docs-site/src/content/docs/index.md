@@ -38,11 +38,13 @@ grows past a few hundred blocks, the things text has always been good at start t
 
 | You want | Blocks give you | Katnip gives you |
 | --- | --- | --- |
+| Types | Nada | An elaborate type system, with anything you could need |
 | Find every use of a variable | Scrolling | Ctrl+F |
+| Return values, multiple values, overrides? | Genuinely nothing | ALL of it |
 | Reuse code between projects | Backpack, sort of | `import` |
 | Catch a typo before running | Nothing | A type error, with line and column |
 | Review a change | Screenshots | A diff |
-| Copy a loop 20 times | 20 drags | A `for` loop |
+| Enumerate over lists in parallel | 20 drags, and complicated setup | A `for` loop |n
 
 Katnip is not a different runtime. There is no interpreter, no VM, no plugin to install
 in Scratch. The compiler emits ordinary Scratch blocks, so anything you build stays
@@ -51,7 +53,7 @@ shareable, remixable, and readable by anyone who opens it in the editor.
 ## What Katnip adds on top of Scratch
 
 * **Static types.** `num`, `str`, `bool`, `list<T>`, `dict<K, V>`, tuples, unions, enums,
-  and structs — all checked before a block is ever emitted.
+  and structs. All checked before a block is ever emitted.
 * **Real procedures.** Return values (Scratch has none), overloads, default parameters,
   named arguments, and methods.
 * **Working recursion.** The compiler analyses your call graph and picks a return

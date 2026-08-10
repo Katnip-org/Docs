@@ -7,7 +7,7 @@ run in MistWarp.
 
 ## Requirements
 
-* **Node.js 20 or newer** — `node --version` to check.
+* **Node.js 20 or newer**: `node --version` to check.
 * A text editor. [VS Code](https://code.visualstudio.com/) is recommended, because Katnip
   ships an extension for it.
 * Somewhere to run the result: [MistWarp](https://warp.mistium.com/editor) (fastest, no account) or
@@ -26,7 +26,7 @@ katnip help
 ```
 
 :::note
-Prefer not to install globally? `npx @katnip-org/compiler help` works too — substitute
+Prefer not to install globally? `npx @katnip-org/compiler help` works too ~ substitute
 `npx @katnip-org/compiler` for `katnip` everywhere below.
 :::
 
@@ -109,6 +109,8 @@ you only want the errors.
 
 The VS Code extension gives you live diagnostics as you type, syntax highlighting, and a
 build command.
+
+Install from the marketplace [here](https://marketplace.visualstudio.com/items?itemName=Katnip-org.katnip-vscode), or under `Katnip` by `Katnip-org`, or install via cli if you so wish.
 
 ```bash
 code --install-extension Katnip-org.katnip-vscode
