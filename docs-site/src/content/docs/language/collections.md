@@ -88,23 +88,6 @@ The `(name, count)` tuple pattern walks both columns together.
 What works today: literals, `d[key]` reads, `d[key] = v` writes, and dict `for` loops.
 :::
 
-## Where a collection can be declared
-
-Only at the **top level** or in a **sprite body**. A list or dict declared inside a proc or
-a handler is not lowered:
-
-```katnip
-proc bad() -> void {
-    private working: list<num> = [];   # NOT lowered
-}
-
-public working: list<num> = [];     # do this instead
-```
-
-Scratch has no local lists either, so this is less of a restriction than it sounds — but
-it does mean shared scratch space is genuinely shared, including across clones and
-recursive calls.
-
 ## How literals reach the project
 
 If every element is a literal, the contents are **baked into the project file** and are
