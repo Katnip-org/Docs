@@ -26,7 +26,7 @@ sprite Turtle {
 katnip build turtle.knip
 ```
 
-Drag `turtle.sb3` onto [TurboWarp](https://turbowarp.org) and click the flag. The cat says
+Drag `turtle.sb3` onto [MistWarp](https://warp.mistium.com/editor) and click the flag. The cat says
 "ready".
 
 Two rules are already visible here:

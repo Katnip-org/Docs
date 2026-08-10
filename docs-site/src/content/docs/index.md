@@ -4,7 +4,7 @@ title: "What is Katnip?"
 
 Katnip is a **typed programming language that compiles to Scratch**. You write `.knip`
 files in a text editor, run the compiler, and get a `.sb3` project file that opens in
-[Scratch](https://scratch.mit.edu) or [TurboWarp](https://turbowarp.org) and runs like
+[Scratch](https://scratch.mit.edu) or [MistWarp](https://warp.mistium.com/editor) and runs like
 any other project.
 
 ```katnip

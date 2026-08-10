@@ -270,7 +270,7 @@ Every enum-typed parameter above is reachable two ways: the namespaced member
 * 🟢 **Extension declaration** — opcode prefixes are detected and added to the project's
   extension list; `pen` is the only one with stdlib bindings today.
 * 🟢 **Packing** — `fflate` zips `project.json` plus the default costume into a `.sb3` that
-  loads in Scratch and TurboWarp.
+  loads in Scratch and MistWarp.
 * 🔴 **Assets** — every sprite gets the same default costume; no costume, backdrop, or sound
   import.
 * 🔴 **Monitor layout** — monitors can be shown and hidden, but not positioned or styled.

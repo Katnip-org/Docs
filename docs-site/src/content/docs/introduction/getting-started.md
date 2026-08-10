@@ -3,14 +3,14 @@ title: "Getting started"
 ---
 
 By the end of this page you will have compiled a `.knip` file into a `.sb3` and watched it
-run in TurboWarp.
+run in MistWarp.
 
 ## Requirements
 
 * **Node.js 20 or newer** — `node --version` to check.
 * A text editor. [VS Code](https://code.visualstudio.com/) is recommended, because Katnip
   ships an extension for it.
-* Somewhere to run the result: [TurboWarp](https://turbowarp.org) (fastest, no account) or
+* Somewhere to run the result: [MistWarp](https://warp.mistium.com/editor) (fastest, no account) or
   [scratch.mit.edu](https://scratch.mit.edu).
 
 ## Install
@@ -97,7 +97,7 @@ katnip build hello.knip
 Wrote hello.sb3
 ```
 
-Drag `hello.sb3` onto [turbowarp.org](https://turbowarp.org) and click the green flag.
+Drag `hello.sb3` onto [MistWarp](https://warp.mistium.com/editor) and click the green flag.
 The cat says hello and takes a step.
 
 :::tip

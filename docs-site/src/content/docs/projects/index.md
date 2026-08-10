@@ -15,7 +15,7 @@ compiled with the current compiler, so if a build fails it is a typo, not the tu
 
 * The compiler installed — see [Getting started](/introduction/getting-started/).
 * A folder to work in.
-* [TurboWarp](https://turbowarp.org) open in a tab.
+* [MistWarp](https://warp.mistium.com/editor) open in a tab.
 
 ## The loop you will be in
 
@@ -23,11 +23,11 @@ compiled with the current compiler, so if a build fails it is a typo, not the tu
 katnip build game.knip     # writes game.sb3
 ```
 
-Then drag `game.sb3` onto TurboWarp and click the flag. When you change the source, rebuild
+Then drag `game.sb3` onto MistWarp and click the flag. When you change the source, rebuild
 and drag it in again.
 
 :::note
-TurboWarp does not hot-reload. Each rebuild is a fresh drag-and-drop. If you are iterating
+MistWarp does not hot-reload. Each rebuild is a fresh drag-and-drop. If you are iterating
 fast, keep the file explorer and the browser side by side.
 :::
 

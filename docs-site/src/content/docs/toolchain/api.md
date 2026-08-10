@@ -47,7 +47,7 @@ if (!sb3) throw new Error(errors.map(e => e.message).join("\n"));
 await writeFile("out.sb3", sb3);
 ```
 
-In a browser, hand the bytes straight to a download or to TurboWarp:
+In a browser, hand the bytes straight to a download or to MistWarp:
 
 ```js
 const url = URL.createObjectURL(new Blob([sb3], { type: "application/zip" }));
