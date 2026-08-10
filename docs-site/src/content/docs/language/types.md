@@ -17,9 +17,9 @@ this whole layer exists purely at compile time and costs nothing in the output.
 | `any` | anything; opts out of checking | — |
 
 ```katnip
-temp count: num = 3;
-temp name: str = "Katnip";
-temp ready: bool = true;
+private count: num = 3;
+private name: str = "Katnip";
+private ready: bool = true;
 ```
 
 `true` and `false` are declared in the prelude, not keywords. They exist because Scratch
@@ -42,8 +42,8 @@ Full detail in [Lists and dicts](/language/collections/).
 A fixed-length, positionally-typed group:
 
 ```katnip
-temp pair: (num, num) = ...;
-temp columns: (list<str>, list<num>) = zip(names, powers);
+private pair: (num, num) = ...;
+private columns: (list<str>, list<num>) = zip(names, powers);
 ```
 
 Tuple types are checked structurally — `(num, num)` and `(num, num)` are the same type no
@@ -84,7 +84,7 @@ enum Team { red = "R", blue = "B" }
 ```
 
 A literal that matches one of an enum's member values is assignable to that enum, so
-`temp t: Team = "R";` and `temp t: Team = Team.red;` mean the same thing. A *computed*
+`private t: Team = "R";` and `private t: Team = Team.red;` mean the same thing. A *computed*
 value of the backing type is not — see [Enums and structs](/language/enums-and-structs/#literal-coercion).
 
 ## Structs
@@ -105,15 +105,15 @@ Structs are fully analyzed and **not lowered**. Nothing struct-shaped survives t
 An annotation is optional whenever there is an initializer to infer from:
 
 ```katnip
-temp count = 3;              # num
-temp name = "Katnip";        # str
-temp scores = [3, 1, 4];     # list<num>
+private count = 3;              # num
+private name = "Katnip";        # str
+private scores = [3, 1, 4];     # list<num>
 ```
 
 Annotate when you want the compiler to hold you to something:
 
 ```katnip
-temp scores: list<num> = [];   # otherwise the element type is open
+private scores: list<num> = [];   # otherwise the element type is open
 ```
 
 Procedure parameters and return types are **always** annotated. There is no inference
@@ -125,7 +125,7 @@ The stdlib declares typevars `T`, `K`, and `V`, which bind from the receiver and
 arguments at each call:
 
 ```katnip
-temp fighters: list<str> = ["Ember", "Splash"];
+private fighters: list<str> = ["Ember", "Splash"];
 
 fighters.contains("Ember");   # T binds to str  -> bool
 fighters.length();            # T binds to str  -> num
@@ -141,11 +141,11 @@ Katnip does *not* silently convert. `num` into a `str` slot is an error, and the
 that would fix it are declared but not yet lowered:
 
 ```katnip
-temp s: str = Str(42);   # type-checks, then fails at codegen
+private s: str = Str(42);   # type-checks, then fails at codegen
 ```
 
 Until they land, use an interpolated string, which lowers to `join` and produces a `str`:
 
 ```katnip
-temp s: str = f"{42}";   # works today
+private s: str = f"{42}";   # works today
 ```

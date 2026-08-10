@@ -103,25 +103,28 @@ See [Operators](/language/operators/).
 ```katnip
 range(stop: num) -> list<num>                             ✅ in a for header
 range(start: num, stop: num, step: num = 1) -> list<num>  ✅ in a for header
+zip(l1: list<T>, l2: list<U>) -> (list<T>, list<U>)       ✅ in a for header
+enumerate(items: list<T>) -> (list<num>, list<T>)         ✅ in a for header
 ```
 
 ```katnip
 for (n, range(2, 10, 2)) { ... }
+for ((name, power), zip(names, powers)) { ... }
+for ((i, name), enumerate(names)) { ... }
 ```
 
-`range` in a `for` header is folded into the loop counter and never built as a list. That
-is the only place it works — `range()` used as a value has no codegen:
+All three fold into the loop counter and never build a list or tuple. `range` is 1-based
+and stop-inclusive, like Scratch's own counter — `range(5)` is `1 2 3 4 5`. That `for`
+header is the only place any of them work; used as a plain value, all three have no
+codegen:
 
 ```katnip
-temp xs: list<num> = range(5);      # ⛔ no slot metadata
+private xs: list<num> = range(5);                      # ⛔ no slot metadata
+private paired: (list<str>, list<num>) = zip(names, powers);   # ⛔ no slot metadata
 ```
 
-```katnip
-zip(l1: list<T>, l2: list<U>) -> (list<T>, list<U>)     ⛔
-enumerate(items: list<T>) -> (list<num>, list<T>)       ⛔
-```
-
-Both infer their return types correctly and then fail codegen. Walk by index instead:
+Both infer their return types correctly and then fail codegen as a value. Walk by index
+instead if you need one outside a `for` header:
 
 ```katnip
 for (i, names.length()) {
@@ -145,7 +148,7 @@ All five resolve to `katnip_*` opcodes with no codegen metadata. Using one throw
 For `num` → `str`, an interpolated string works today and lowers to `join`:
 
 ```katnip
-temp s: str = f"{count}";
+private s: str = f"{count}";
 ```
 
 Scratch coerces at runtime anyway, so most casts are only about satisfying the type

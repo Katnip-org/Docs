@@ -20,7 +20,7 @@ if (sensing.touching("Apple")) {
 }
 if (sensing.touchingColor("#ff8800")) { ... }
 
-temp d: num = sensing.distanceTo("_mouse_");
+private d: num = sensing.distanceTo("_mouse_");
 ```
 
 Target strings: `"_edge_"`, `"_mouse_"`, or a sprite's name. These menus also list sprite
@@ -58,7 +58,7 @@ sensing.answer() -> str              ✅
 
 ```katnip
 sensing.ask("How many treats?");
-temp treats: str = sensing.answer();
+private treats: str = sensing.answer();
 looks.say(f"treats: {treats}", 1);
 ```
 
@@ -92,8 +92,8 @@ Scratch's `() of ()` block. Target is `"_stage_"` or a sprite name; property is 
 dropdown's text.
 
 ```katnip
-temp x: num = sensing.getProperty("x position", "Cat");
-temp bg: any = sensing.getProperty("backdrop #", "_stage_");
+private x: num = sensing.getProperty("x position", "Cat");
+private bg: any = sensing.getProperty("backdrop #", "_stage_");
 ```
 
 Common properties: `"x position"`, `"y position"`, `"direction"`, `"costume #"`,
@@ -112,8 +112,8 @@ sensing.current(unit: TimeUnit) -> num   ✅
 ```
 
 ```katnip
-temp year: num  = sensing.current(sensing.TimeUnit.YEAR);
-temp hour: num  = sensing.current("HOUR");        # identical
+private year: num  = sensing.current(sensing.TimeUnit.YEAR);
+private hour: num  = sensing.current("HOUR");        # identical
 ```
 
 ## Drag mode

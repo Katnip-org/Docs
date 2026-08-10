@@ -46,7 +46,7 @@ Prefer `while` when the first iteration does not need to be unconditional.
 
 ## for
 
-Katnip's `for` takes a binding and something to walk. There are five things it can walk.
+Katnip's `for` takes a binding and something to walk. There are seven things it can walk.
 
 ### A counter
 
@@ -67,8 +67,28 @@ for (n, range(2, 10, 2)) {
 }
 ```
 
-`range(stop)` or `range(start, stop, step)`. The range is folded into the loop counter,
-with constant folding when the bounds are literals — no list is ever built.
+`range(stop)` or `range(start, stop, step)`, **1-based and stop-inclusive**, like Scratch's
+own counter: `range(5)` is `1 2 3 4 5`, `range(5, 1, -1)` counts down `5 4 3 2 1`. The range
+is folded into the loop counter, with constant folding when the bounds are literals — no
+list is ever built.
+
+### A zip() or enumerate() pair
+
+```katnip
+for ((name, power), zip(names, powers)) {
+    report(name, power);
+}
+
+for ((i, name), enumerate(names)) {
+    report(i, name);
+}
+```
+
+Also folded into the loop counter, never built as a list or tuple. `enumerate` reuses the
+1-based counter as the index, so it costs no extra block. A single binding takes just the
+first column — `for (i, enumerate(names))` binds the index alone. `zip`'s length comes
+from its first list; a second list shorter than the first reads empty past its end, rather
+than the loop stopping early.
 
 ### A list
 

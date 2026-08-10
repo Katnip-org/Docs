@@ -28,7 +28,7 @@ The last one is the only genuinely dangerous kind, and there is exactly one inst
 🔴 **Worst gap on this page.**
 
 ```katnip
-temp x: num = base ** 2;      # compiles, produces an empty literal
+private x: num = base ** 2;      # compiles, produces an empty literal
 ```
 
 Scratch has no power block, and Katnip has no `builds` procedure for `**` yet, so the IR
@@ -39,7 +39,7 @@ lowers it to an empty literal. **No error is reported.** `**=` has the same gap,
 
 ```katnip
 proc pow(base: num, exp: num) -> num {
-    temp result: num = 1;
+    private result: num = 1;
     for (i, exp) {
         result = result * base;
     }
@@ -51,7 +51,7 @@ For fractional powers, bind `operator_mathop`:
 
 ```katnip
 proc mathop(@opcode = "operator_mathop", operator: str, num: num) -> num {}
-temp root: num = mathop("sqrt", 16);
+private root: num = mathop("sqrt", 16);
 ```
 
 ---
@@ -95,7 +95,7 @@ no `Enum(x)` escape hatch to force one:
 ```katnip
 pen.setAttr(pen.ColorParam.COLOR, 10);   # ✅ member
 pen.setAttr("color", 10);                # ✅ literal, coerced
-temp attr: str = "color";
+private attr: str = "color";
 pen.setAttr(attr, 10);                   # 🔴 "expects one of its members here, not a computed 'str'"
 ```
 
@@ -128,8 +128,7 @@ or not.
 | `console.input` | `sensing.ask` + `sensing.answer` |
 | `Num()`, `Str()`, `Bool()`, `List()` | `f"{value}"` for `num` → `str`; annotate `any` elsewhere |
 | `typeof()` | — |
-| `zip()`, `enumerate()` | walk by index |
-| `range()` **as a value** | `range()` in a `for` header works — that is folded into the counter |
+| `zip()`, `enumerate()`, `range()` **as a value** | use directly in a `for` header instead — all three fold into the loop counter there |
 | every `dict` method | keep a parallel key list |
 | `list.merge` | `for (x, other) { self.add(x); }` |
 | `motion.getPosition` | bind `motion_xposition` / `motion_yposition` yourself |
@@ -191,22 +190,6 @@ str.contains(name, "at");    # 🔴 "undeclared variable 'str'"
 ```
 
 Codegen treats the namespace as a variable name. **Use the method form.**
-
----
-
-## Lists and dicts must be declared at the top level
-
-🔴 Only top-level and sprite-level declarations are lowered. A list or dict declared inside
-a proc or a handler produces nothing.
-
-```katnip
-proc bad() -> void {
-    temp working: list<num> = [];   # not lowered
-}
-```
-
-Scratch has no local lists either, so hoist it to the top level — and remember it is then
-genuinely shared, including between clones and recursive calls.
 
 ---
 

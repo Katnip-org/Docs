@@ -6,7 +6,7 @@ title: "Project 3 — Falling treats"
 that follows the mouse, three misses and it is over.
 
 **You will learn:** clones and per-clone state, lists, parallel scripts, spawner loops,
-game-over signalling, and why `temp` is dangerous here.
+game-over signalling, and why a proc-local variable is dangerous here.
 
 Make a file called `treats.knip`.
 
@@ -123,11 +123,11 @@ independently, with its own `speed`.
 | --- | --- |
 | top-level `public` / `private` — `missed`, `lives` | **No** — one copy on the stage |
 | sprite member — `private speed` | **Yes** — each clone has its own |
-| `temp` inside a proc | **No** — a mangled global, shared by everything |
+| `private` declared inside a proc | **No** — a mangled global, shared by everything |
 
-So `speed` had to be a sprite member. Had you written `temp speed` inside a procedure,
-every clone would share one variable and they would all fall at whatever speed the most
-recent clone picked. That is the single most common way to lose an evening in
+So `speed` had to be a sprite member. Had you declared it `private` inside a procedure
+instead, every clone would share one variable and they would all fall at whatever speed
+the most recent clone picked. That is the single most common way to lose an evening in
 clone-heavy Katnip.
 
 :::note

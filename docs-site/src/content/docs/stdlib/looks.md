@@ -38,8 +38,8 @@ looks.switchCostume("costume1");
 looks.nextCostume();
 looks.switchBackdrop("next backdrop");
 
-temp c: any = looks.costume();            # number, the default
-temp n: any = looks.costume("name");      # or looks.NumberName.NAME
+private c: any = looks.costume();            # number, the default
+private n: any = looks.costume("name");      # or looks.NumberName.NAME
 ```
 
 Backdrop strings: `"next backdrop"`, `"previous backdrop"`, `"random backdrop"`, or a

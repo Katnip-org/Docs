@@ -11,8 +11,8 @@ Status of every language and toolchain feature, tracked against the compiler pip
 | 🟡 | Partial; implemented at some stages, named per row |
 | 🔴 | Not implemented, or implemented only far enough to type-check |
 
-Last verified against `main` (compiler `0.1.12`, VS Code extension `0.0.12`) with a green
-`node --test` run — every case passing except the 8 `todo` cases that pin the gaps below —
+Last verified against `main` (compiler `0.1.15`, VS Code extension `0.0.14`) with a green
+`node --test` run — every case passing except the 7 `todo` cases that pin the gaps below —
 and a clean `katnip build examples/codegen.knip`.
 
 :::note
@@ -63,13 +63,15 @@ write instead" version, see [Known gaps](/reference/known-gaps/).
 
 ## Declarations
 
-* 🟢 **Variables** — `public`, `private`, and `temp` access modifiers, with or without a
-  type annotation.
-  * 🟢 Top-level variables become stage-owned globals, visible from every sprite.
+* 🟢 **Variables** — `public` and `private` access modifiers, with or without a type
+  annotation.
+  * 🟢 The modifier picks the owner, wherever the declaration is written: `public` is
+    stage-owned and visible to every sprite, `private` belongs to whatever encloses it. Two
+    sprites claiming one `public` name is an error.
   * 🟢 Sprite members shadowing a global are renamed `Sprite_name` at codegen, since Scratch
     cannot represent the collision.
-  * 🟢 `temp` inside a proc becomes a mangled global; scope-less by design, so recursion
-    still clobbers it.
+  * 🟢 A variable declared inside a proc becomes a mangled global; scope-less by design, so
+    recursion still clobbers it.
 * 🟢 **Procedures** — `proc name(params) -> Type { ... }`, with bodies lowered into
   `procedures_definition` blocks.
   * 🟢 Overloading by parameter list; dispatch resolved by argument types.
@@ -102,7 +104,14 @@ write instead" version, see [Known gaps](/reference/known-gaps/).
 * 🟢 **`for` over a dict** — `for ((key, value), d)` walks the keys and values columns
   together.
 * 🟢 **`for` over `range()`** — folded into the loop counter with constant folding on
-  literal `start`/`stop`/`step`, never built as a list.
+  literal `start`/`stop`/`step`, never built as a list. 1-based and stop-inclusive like
+  Scratch's own counter, so `range(5)` yields `1 2 3 4 5`.
+* 🟢 **`for` over `zip()` / `enumerate()`** — walked by index instead of built:
+  `for ((a, b), zip(l1, l2))` reads both lists under one counter running
+  `l1.length()` times; `for ((i, v), enumerate(l))` reuses the 1-based counter as the
+  index, so it costs no extra block.
+  * 🟡 A second list shorter than the first reads empty past its end, rather than the loop
+    stopping early.
 * 🟢 **`switch` / `case` / `default`** — lowers to an if/else chain; a case can hold several
   values.
   * 🟢 Case labels are checked against the switch value's type, so a label on an
@@ -149,8 +158,8 @@ write instead" version, see [Known gaps](/reference/known-gaps/).
   place or append when the key is missing.
 * 🟢 **String indexing** — `s[1]` lowers to `operator_letter_of`.
 * 🟢 **List monitors** — `show()` and `hide()` toggle the project's list monitors.
-* 🔴 **Lists and dicts declared inside a script or proc** — only top-level and sprite-level
-  declarations are lowered.
+* 🟢 **Lists and dicts declared inside a script or proc** — hoisted and refilled on every
+  run, rather than baked once like a top-level list.
 * 🔴 **Slices** — `s[1:5:2]` parses and gets a naive type, no lowering.
 
 ## Procedures and the return ABI
@@ -238,9 +247,10 @@ the compiler cannot enumerate — `Target`, `TouchTarget`, `DistanceTarget`, `Ob
 * 🔴 **`dict`** — `contains`, `length`, `keys`, `values`, `merge` all resolve to `katnip_*`
   opcodes with no codegen metadata.
 * 🔴 **`console`** — `log`, `warn`, `error` are `katnip_*`; `input` is a yields proc.
-* 🔴 **Casts and helpers** — `Num`, `Str`, `Bool`, `List`, `typeof`, `zip`, `enumerate`,
-  `motion.getPosition`, and `range()` used as a value all type-check but have no codegen
-  metadata; using one throws `no slot metadata`.
+* 🔴 **Casts and helpers** — `Num`, `Str`, `Bool`, `List`, `typeof`, `motion.getPosition`,
+  and `range()`/`zip()`/`enumerate()` used *as a value* all type-check but have no codegen
+  metadata; using one throws `no slot metadata`. In a `for` header all three iteration
+  helpers are 🟢 — they are folded into the loop, never built.
 
 :::note
 Every enum-typed parameter above is reachable two ways: the namespaced member
@@ -282,7 +292,7 @@ Every enum-typed parameter above is reachable two ways: the namespaced member
 * 🟢 **VS Code extension** — live diagnostics on type or on save with a configurable
   debounce, syntax highlighting, language configuration, and a `Katnip: Build .sb3` command.
 * 🟢 **Tests** — `node --test` cases across lexer, parser, semantic, callgraph, imports, IR,
-  and codegen, plus 8 `todo` cases in `gaps.test.ts` that assert each gap on this page is
+  and codegen, plus 7 `todo` cases in `gaps.test.ts` that assert each gap on this page is
   still a gap, so closing one fails loudly.
 * 🟢 **Public API** — `checkSource`, `compileToIR` and `compileToSb3` exported for embedding,
   with a pluggable import resolver.

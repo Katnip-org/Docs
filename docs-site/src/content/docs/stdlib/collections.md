@@ -35,8 +35,8 @@ public scores: list<num> = [3, 1, 4];
 
 proc tally() -> void {
     scores.add(7);
-    temp n: num = scores.length();
-    temp where: num = scores.indexOf(4);      # 0 if absent
+    private n: num = scores.length();
+    private where: num = scores.indexOf(4);      # 0 if absent
     if (scores.contains(1)) { ... }
 }
 ```
@@ -90,7 +90,7 @@ What **does** work on a dict, because it is language syntax rather than a method
 ```katnip
 public stock: dict<str, num> = {"apple": 2, "banana": 5};
 
-temp n: num = stock["apple"];       # ✅ read
+private n: num = stock["apple"];       # ✅ read
 stock["cherry"] = 7;                # ✅ write — appends if the key is new
 stock["apple"] += 1;                # ✅ compound assignment
 
@@ -144,7 +144,7 @@ walking characters:
 
 ```katnip
 proc countChar(s: str, target: str) -> num {
-    temp n: num = 0;
+    private n: num = 0;
     for (c, s) {
         if (c == target) { n += 1; }
     }

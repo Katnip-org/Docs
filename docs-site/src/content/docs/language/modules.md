@@ -30,8 +30,8 @@ An import brings its symbols in under a namespace — the file's basename, or th
 import "./shapes.knip";
 import "./shapes.knip" as geo;
 
-temp p: num = shapes.perimeter(4, 3);
-temp q: num = geo.perimeter(4, 3);
+private p: num = shapes.perimeter(4, 3);
+private q: num = geo.perimeter(4, 3);
 ```
 
 ## Visibility
@@ -52,8 +52,8 @@ public proc perimeter(side: num, count: num) -> num {
 # main.knip
 import "./lib.knip";
 
-temp a: num = lib.sides;        # ok
-temp b: num = lib.secret;       # error: 'secret' is private
+private a: num = lib.sides;        # ok
+private b: num = lib.secret;       # error: 'secret' is private
 ```
 
 ## Imports are not re-exported

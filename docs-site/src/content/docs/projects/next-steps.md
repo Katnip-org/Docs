@@ -11,7 +11,7 @@ read depending on what you want to do.
 | --- | --- |
 | Know every loop form and what it compiles to | [Control flow](/language/control-flow/) |
 | Return values, overload, recurse | [Procedures](/language/procedures/) |
-| Understand `public` / `private` / `temp` properly | [Variables](/language/variables/) |
+| Understand `public` / `private` properly | [Variables](/language/variables/) |
 | Use dicts, or work around the missing methods | [Lists and dicts](/language/collections/) |
 | Name your constants | [Enums and structs](/language/enums-and-structs/) |
 | Split a project across files *(check only)* | [Modules](/language/modules/) |
@@ -35,7 +35,8 @@ proc fib(n: num) -> num {
 It is genuinely worth building once and watching run. Details in
 [Returning values](/language/procedures/#returning-values).
 
-Remember that `temp` does **not** survive recursion — pass state through parameters.
+Remember that a variable declared inside a procedure does **not** survive recursion — pass
+state through parameters.
 
 ## Reach blocks the stdlib has not wrapped
 
@@ -48,7 +49,7 @@ proc mathop(@opcode = "operator_mathop", operator: str, num: num) -> num {}
 proc x(@opcode = "motion_xposition") -> num {}
 proc y(@opcode = "motion_yposition") -> num {}
 
-temp root: num = mathop("sqrt", 16);
+private root: num = mathop("sqrt", 16);
 ```
 
 `operator_mathop` alone covers `abs`, `floor`, `ceiling`, `sqrt`, `sin`, `cos`, `tan`,
@@ -81,7 +82,8 @@ ambitious. The short version:
 * imports do not survive codegen — one file per project
 * structs do not reach the `.sb3`
 * `**` silently produces a wrong answer
-* `console.*`, the casts, `typeof`, `zip`/`enumerate` and every dict method fail the build
+* `console.*`, the casts, `typeof`, and every dict method fail the build
+* `zip`/`enumerate`/`range` work in a `for` header, but fail the build used as a plain value
 * an enum slot takes a member or a matching literal, but never a computed value
 * no asset import
 
