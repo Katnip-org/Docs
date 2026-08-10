@@ -1,16 +1,19 @@
 # Known gaps
 
 Katnip's analyzer runs ahead of its code generator. Several features type-check cleanly and
-then either fail the build or, in one case, silently produce a wrong answer.
+then either fail the build or, in one case, silently produce a wrong answer. A couple of
+gaps go the other way — the analyzer refuses something Scratch could express, because the
+lowering to reach it does not exist yet.
 
 **Read this page before planning a project.** It is the difference between an afternoon of
 building and an afternoon of confusion.
 
-## The three failure modes
+## The four failure modes
 
 | Mode | What you see | Examples |
 | --- | --- | --- |
 | 🔴 **Build error** | `check` passes, `build` fails loudly | imports, `console.*`, casts, dict methods |
+| 🔴 **Check error** | `check` refuses it, with a message | a computed value in an enum slot |
 | 🟠 **Silent no-op** | builds, but the code is missing from the `.sb3` | structs |
 | ⛔ **Silently wrong** | builds and runs, with a wrong answer | `**` |
 
@@ -81,30 +84,34 @@ public point_y: list<num> = [];
 
 ---
 
-## Namespaced enum members are unreachable
+## No cast to an enum
 
-🔴 An enum declared inside a stdlib namespace cannot have its members referenced at all:
+🔴 A *literal* whose value is one of an enum's member values is accepted in an enum slot,
+and so is a member reference. A **computed** value of the backing type is not, and there is
+no `Enum(x)` escape hatch to force one:
 
 ```katnip
-motion.goTo(motion.Target.RANDOM);   # Type 'Target' has no member 'RANDOM'
-motion.goTo(Target.RANDOM);          # 'Target' is not defined
-motion.goTo("_random_");             # ✅
+pen.setAttr(pen.ColorParam.COLOR, 10);   # ✅ member
+pen.setAttr("color", 10);                # ✅ literal, coerced
+temp attr: str = "color";
+pen.setAttr(attr, 10);                   # 🔴 "expects one of its members here, not a computed 'str'"
 ```
 
-Prelude enums — `Key`, `StopType` — are fine, because the prelude has no namespace.
+This is a deliberate narrow gap rather than an oversight: the slot is a Scratch *menu*, a
+shadow block, so dropping a reporter into it is legal but almost never what you meant. The
+diagnostic points at the member form.
 
-**Where the parameter is `Enum | str`**, pass the string. Every value is listed on the
-relevant stdlib page.
+**Instead:** branch on the value and pass a literal in each arm.
 
-**Where it is a bare enum**, the procedure is unusable:
+```katnip
+if (mode == 1) { pen.setAttr("color", 10); }
+else           { pen.setAttr("saturation", 10); }
+```
 
-| Blocked | Namespace |
-| --- | --- |
-| `motion.point(target)` overload, `motion.setRotationStyle` | motion |
-| `looks.setEffect`, `looks.changeEffect`, `looks.goToLayer`, `looks.changeLayer`, the `NAME` mode of `costume()` / `backdrop()` | looks |
-| `sensing.setDragMode`, `sensing.current` | sensing |
-| `pen.setAttr`, `pen.changeAttr` | pen |
-| `events.onGreaterThan` | events |
+The six *open* menus — `motion.Target`, `sensing.TouchTarget`, `sensing.DistanceTarget`,
+`sensing.ObjectTarget`, `clone.CloneTarget`, `looks.Backdrop` — also list sprite, costume,
+and backdrop names, so their parameters keep an `| str` arm and take any string, computed
+or not.
 
 ---
 
@@ -182,27 +189,6 @@ str.contains(name, "at");    # 🔴 "undeclared variable 'str'"
 ```
 
 Codegen treats the namespace as a variable name. **Use the method form.**
-
----
-
-## No string literal inside an f-string interpolation
-
-🔴 The lexer does not return to the interpolated-expression state when an inner string
-closes, so the rest of the line is swallowed. Neither quote style works:
-
-```katnip
-looks.say(f"{countChar("banana", "a")}");   # parse error
-looks.say(f"{countChar('banana', 'a')}");   # parse error
-```
-
-**Instead**, hoist the call:
-
-```katnip
-temp reps: num = countChar("banana", "a");
-looks.say(f"{reps}");
-```
-
-Single-quoted strings work fine outside interpolations.
 
 ---
 

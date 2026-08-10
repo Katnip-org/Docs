@@ -14,7 +14,7 @@ Then `Developer: Reload Window`, and open any `.knip` file.
 
 ```bash
 npm run package -w katnip-vscode
-code --install-extension packages/vscode/katnip-vscode-0.0.9.vsix --force
+code --install-extension packages/vscode/katnip-vscode-0.0.12.vsix --force
 ```
 
 The `package` script rebuilds the compiler, vendors it into the extension, and produces the

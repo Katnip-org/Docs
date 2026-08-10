@@ -80,7 +80,7 @@ ambitious. The short version:
 * structs do not reach the `.sb3`
 * `**` silently produces a wrong answer
 * `console.*`, the casts, `typeof`, `zip`/`enumerate` and every dict method fail the build
-* namespaced enum members are unreachable
+* an enum slot takes a member or a matching literal, but never a computed value
 * no asset import
 
 [Feature status](../reference/feature-status.md) has the full per-feature table if you want the

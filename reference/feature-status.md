@@ -9,8 +9,9 @@ Status of every language and toolchain feature, tracked against the compiler pip
 | 🟡 | Partial; implemented at some stages, named per row |
 | 🔴 | Not implemented, or implemented only far enough to type-check |
 
-Last verified against `main` with 146 passing tests and a clean
-`katnip build examples/codegen.knip`.
+Last verified against `main` (compiler `0.1.12`, VS Code extension `0.0.12`) with a green
+`node --test` run — every case passing except the 8 `todo` cases that pin the gaps below —
+and a clean `katnip build examples/codegen.knip`.
 
 {% hint style="info" %}
 This page mirrors `features.md` in the compiler repository. For the practical "what do I
@@ -23,6 +24,9 @@ write instead" version, see [Known gaps](known-gaps.md).
 
 * 🟢 **Lexer** — hand-written state machine, operator trie for multi-character tokens,
   tracks line/column for every token.
+  * 🟢 Interpolation nesting — a stack of string frames, so an interpolation may contain a
+    string of either quote style, or another f-string.
+  * 🟢 Unterminated string literals are reported instead of running off the end of the file.
 * 🟢 **Parser** — Pratt parser with a binding-power table, recovers from syntax errors into
   error nodes so analysis still runs.
 * 🟢 **Semantic analyzer** — two-pass (hoist, then walk), scoped symbol table, structured
@@ -40,6 +44,15 @@ write instead" version, see [Known gaps](known-gaps.md).
   frames.
 * 🟢 **Union types** — `Target | str`, with assignability in both directions.
 * 🟢 **Enums** — nominal, compared by name so two enums sharing a member never collide.
+* 🟢 **Enum literal coercion** — a *literal* whose value is one of an enum's member values
+  is assignable to that enum, so `pen.setAttr("color", 10)` and
+  `pen.setAttr(pen.ColorParam.COLOR, 10)` compile to the same blocks. The rule lives in
+  `isAssignable`, so it covers arguments, initializers, assignments, returns, struct
+  fields, list and dict elements, and `case` labels alike. A literal that misses is
+  rejected with the enum's member list and a did-you-mean.
+  * 🔴 A **non-literal** of the backing type — a variable, a call, a concatenation — is not
+    assignable, and there is no `Enum(x)` cast to force one; the diagnostic points at the
+    member form instead. See [Known gaps](known-gaps.md#no-cast-to-an-enum).
 * 🟢 **Type inference** — every expression gets a type; annotations are optional on
   declarations with an initializer.
 * 🟢 **Generic stdlib typevars** — `T`, `K`, `V` bind from receivers and arguments, so
@@ -65,7 +78,11 @@ write instead" version, see [Known gaps](known-gaps.md).
   * 🟢 Warp — on by default for user procs, `@warp` decorator overrides.
 * 🟢 **Sprites** — `sprite Name { ... }` holding members, procs, and event handlers.
 * 🟢 **Enums** — implicit members fold to the qualified `"Enum.member"`, explicit values are
-  kept verbatim for sb3 fields and menus.
+  kept verbatim for sb3 fields and menus. A coerced literal folds to the identical value,
+  so it takes the same lowering path as the member reference.
+  * 🟢 Enums declared inside a namespace — `motion.RotationStyle.LEFT_RIGHT` resolves and
+    folds; the enum stays out of global scope, so the bare `RotationStyle` is still
+    undefined.
 * 🟢 **Access control across files** — only `public` symbols cross a file boundary; imports
   are not re-exported.
 * 🔴 **Stage block** — no `stage { ... }` declaration; stage state is implied by top-level
@@ -86,8 +103,10 @@ write instead" version, see [Known gaps](known-gaps.md).
   literal `start`/`stop`/`step`, never built as a list.
 * 🟢 **`switch` / `case` / `default`** — lowers to an if/else chain; a case can hold several
   values.
+  * 🟢 Case labels are checked against the switch value's type, so a label on an
+    enum-typed value must be a member or a literal that coerces to one.
   * 🔴 Fallthrough keyword — not designed or implemented.
-  * 🔴 Exhaustiveness checking over enums.
+  * 🔴 Exhaustiveness checking over enums — a switch missing members is still not reported.
 * 🟢 **`return`** — scalar and tuple frames, followed by `control_stop`.
 * 🟢 **Event handlers** — `events.onFlag() { }` and friends, gated by the analyzer to sprite
   top level.
@@ -190,6 +209,13 @@ write instead" version, see [Known gaps](known-gaps.md).
 
 Bundled `.knip` declaration files, generated into the compiler at build time.
 
+Menu parameters are typed by the enum alone where the Scratch menu is a closed set
+(`ColorParam`, `RotationStyle`, `GraphicEffect`, `LayerPosition`, `LayerDirection`,
+`NumberName`, `DragMode`, `TimeUnit`, `GreaterThanProperty`, `Key`), so a bare literal is
+checked against the members. Six menus also list sprite, costume, or backdrop names, which
+the compiler cannot enumerate — `Target`, `TouchTarget`, `DistanceTarget`, `ObjectTarget`,
+`CloneTarget` and `Backdrop` keep an explicit `| str` arm for those, and are not checked.
+
 * 🟢 **`prelude`** (no namespace) — `wait`, `stop`, `len`, `showVariable`, `hideVariable`,
   the `Key` and `StopType` enums, `true`/`false`, and the `builds` operator procs.
 * 🟢 **`events`** — `onFlag`, `onKey`, `onClick`, `onBackdropSwitch`, `onGreaterThan`,
@@ -200,8 +226,8 @@ Bundled `.knip` declaration files, generated into the compiler at build time.
   effects, show/hide, layers.
 * 🟢 **`sensing`** — touching, colors, distance, ask/answer, keys, mouse, drag mode,
   loudness, timer, `sensing_of`, date parts, online, username.
-* 🟢 **`pen`** — down, up, clear, hex color, color params, size; the extension is declared in
-  the project automatically.
+* 🟢 **`pen`** — down, up, clear, stamp, hex color, color params, size; the extension is
+  declared in the project automatically.
 * 🟢 **`clone`** — `onStart`, `create`, `delete`.
 * 🟡 **`list`** — `add`, `contains`, `length`, `clear`, `indexOf`, `show`, `hide` are 🟢;
   `remove` is 🔴 (yields), `merge` is 🔴 (`katnip_list_merge`).
@@ -214,11 +240,10 @@ Bundled `.knip` declaration files, generated into the compiler at build time.
   `motion.getPosition`, and `range()` used as a value all type-check but have no codegen
   metadata; using one throws `no slot metadata`.
 
-{% hint style="warning" %}
-The 🟢 marks above describe the *declarations*. Several of those procedures take a
-namespaced enum parameter whose members cannot be referenced from user code, which makes
-the procedure unusable in practice — see
-[Known gaps](known-gaps.md#namespaced-enum-members-are-unreachable) for the affected list.
+{% hint style="info" %}
+Every enum-typed parameter above is reachable two ways: the namespaced member
+(`pen.ColorParam.COLOR`) or a literal that matches a member value (`"color"`). Only a
+*computed* value is rejected — see [Known gaps](known-gaps.md#no-cast-to-an-enum).
 {% endhint %}
 
 ## Scratch project output
@@ -254,8 +279,9 @@ the procedure unusable in practice — see
   them.
 * 🟢 **VS Code extension** — live diagnostics on type or on save with a configurable
   debounce, syntax highlighting, language configuration, and a `Katnip: Build .sb3` command.
-* 🟢 **Tests** — 146 `node --test` cases across lexer, parser, semantic, callgraph, imports,
-  IR, and codegen.
+* 🟢 **Tests** — `node --test` cases across lexer, parser, semantic, callgraph, imports, IR,
+  and codegen, plus 8 `todo` cases in `gaps.test.ts` that assert each gap on this page is
+  still a gap, so closing one fails loudly.
 * 🟢 **Public API** — `checkSource`, `compileToIR` and `compileToSb3` exported for embedding,
   with a pluggable import resolver.
 * 🔴 **Language server** — the extension shells the compiler directly; no LSP, no

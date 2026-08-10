@@ -81,7 +81,9 @@ enum Fruit { apple, banana, cherry }
 enum Team { red = "R", blue = "B" }
 ```
 
-See [Enums and structs](enums-and-structs.md).
+A literal that matches one of an enum's member values is assignable to that enum, so
+`temp t: Team = "R";` and `temp t: Team = Team.red;` mean the same thing. A *computed*
+value of the backing type is not — see [Enums and structs](enums-and-structs.md#literal-coercion).
 
 ## Structs
 

@@ -3,10 +3,10 @@
 ## Touching
 
 ```katnip
-sensing.touching(target: TouchTarget | str) -> bool          ✅ with a string
+sensing.touching(target: TouchTarget | str) -> bool          ✅
 sensing.touchingColor(color: str) -> bool                    ✅
 sensing.colorTouchingColor(color: str, color2: str) -> bool  ✅
-sensing.distanceTo(target: DistanceTarget | str) -> num      ✅ with a string
+sensing.distanceTo(target: DistanceTarget | str) -> num      ✅
 ```
 
 ```katnip
@@ -21,23 +21,29 @@ if (sensing.touchingColor("#ff8800")) { ... }
 temp d: num = sensing.distanceTo("_mouse_");
 ```
 
-Target strings: `"_edge_"`, `"_mouse_"`, or a sprite's name. Colours are hex strings.
+Target strings: `"_edge_"`, `"_mouse_"`, or a sprite's name. These menus also list sprite
+names, so both parameters keep an `| str` arm and take a computed name. Colours are hex
+strings.
 
 ## Mouse and keyboard
 
 ```katnip
-sensing.keyPressed(key: Key | str) -> bool   ✅
-sensing.mouseDown() -> bool                  ✅
-sensing.mouseX() -> num                      ✅
-sensing.mouseY() -> num                      ✅
+sensing.keyPressed(key: Key) -> bool   ✅
+sensing.mouseDown() -> bool            ✅
+sensing.mouseX() -> num                ✅
+sensing.mouseY() -> num                ✅
 ```
 
 ```katnip
 if (sensing.keyPressed(Key.UP_ARROW) && sensing.mouseDown()) {
     motion.changeY(5);
 }
-if (sensing.keyPressed("a")) { ... }         # letter keys: pass the string
+if (sensing.keyPressed("a")) { ... }         # letter keys, as a literal
 ```
+
+`key` is a bare `Key` — the keyboard menu is a closed set, so a literal is checked against
+it. `sensing.keyPressed("q")` is fine; `sensing.keyPressed("ctrl")` is an error listing
+every key.
 
 ## Asking
 
@@ -77,7 +83,7 @@ while (sensing.timer() < 10) {
 ## Other sprites and the stage
 
 ```katnip
-sensing.getProperty(property: str, target: ObjectTarget | str) -> any   ✅ with a string
+sensing.getProperty(property: str, target: ObjectTarget | str) -> any   ✅
 ```
 
 Scratch's `() of ()` block. Target is `"_stage_"` or a sprite name; property is the
@@ -100,27 +106,39 @@ This is currently the only way to read a sprite's x/y — see [motion](motion.md
 sensing.daysSince2000() -> num           ✅
 sensing.isOnline() -> bool               ✅
 sensing.username() -> str                ✅
-sensing.current(unit: TimeUnit) -> num   ⛔ namespaced enum
+sensing.current(unit: TimeUnit) -> num   ✅
 ```
 
-`sensing.current` is blocked by the namespaced-enum gap, so individual date parts are not
-reachable. `daysSince2000()` works and is enough for elapsed-time and seeding.
+```katnip
+temp year: num  = sensing.current(sensing.TimeUnit.YEAR);
+temp hour: num  = sensing.current("HOUR");        # identical
+```
 
 ## Drag mode
 
 ```katnip
-sensing.setDragMode(mode: DragMode) -> void   ⛔ namespaced enum
+sensing.setDragMode(mode: DragMode) -> void   ✅
+```
+
+```katnip
+sensing.setDragMode(sensing.DragMode.NOT_DRAGGABLE);
+sensing.setDragMode("not draggable");             # identical
 ```
 
 ## Full enum reference
 
-Declared in the namespace and **not reachable** from user code. Listed so you know which
-strings the union arms accept:
+Reference a member through the namespace (`sensing.DragMode.DRAGGABLE`), or pass the value
+as a literal.
 
 | Enum | Members |
 | --- | --- |
 | `sensing.TouchTarget` | `MOUSE` = `"_mouse_"`, `EDGE` = `"_edge_"` |
 | `sensing.DistanceTarget` | `MOUSE` = `"_mouse_"` |
 | `sensing.ObjectTarget` | `STAGE` = `"_stage_"` |
-| `sensing.DragMode` | `DRAGGABLE`, `NOT_DRAGGABLE` |
-| `sensing.TimeUnit` | `YEAR`, `MONTH`, `DATE`, `DAY_OF_WEEK`, `HOUR`, `MINUTE`, `SECOND` |
+| `sensing.DragMode` | `DRAGGABLE` = `"draggable"`, `NOT_DRAGGABLE` = `"not draggable"` |
+| `sensing.TimeUnit` | `YEAR`, `MONTH`, `DATE`, `DAY_OF_WEEK` = `"DAYOFWEEK"`, `HOUR`, `MINUTE`, `SECOND` |
+
+{% hint style="info" %}
+`TimeUnit` members other than `DAY_OF_WEEK` have no explicit value, so they fold to the
+bare member name — the literal form is `"YEAR"`, uppercase, not `"year"`.
+{% endhint %}

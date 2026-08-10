@@ -53,10 +53,10 @@ past the bottom of the stage. Scratch sprites do not leave the stage; they stick
 edge.
 
 `sensing.touching("Basket")` takes a plain string. Its parameter type is
-`TouchTarget | str`, and the string arm is the one you can actually use — the enum lives
-inside the `sensing` namespace, and namespaced enum members are not reachable from user
-code. Same for `"_edge_"` and `"_mouse_"`. See
-[the trap](../stdlib/README.md#the-namespaced-enum-trap).
+`TouchTarget | str`: the menu lists the two fixed targets `"_edge_"` and `"_mouse_"` *and*
+every sprite name, so the `str` arm is there to carry names like `"Basket"`. The two fixed
+ones can also be written as members — `sensing.TouchTarget.EDGE` is `"_edge_"`. See
+[Passing a menu value](../stdlib/README.md#passing-a-menu-value).
 
 ## Step 3 — Catch the miss
 

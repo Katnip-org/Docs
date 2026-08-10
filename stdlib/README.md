@@ -47,25 +47,35 @@ list.contains(scores, 4);     # namespace form  ⛔ fails at codegen
 Both type-check, but only the **method form** builds today — the namespace form makes
 codegen look for a variable called `list`. Use the receiver form throughout.
 
-## The namespaced-enum trap
+## Passing a menu value
 
-Read this once and it will save you an afternoon.
-
-Enums declared **inside** a stdlib namespace — `motion.Target`, `looks.GraphicEffect`,
-`sensing.DragMode`, and friends — cannot be referenced from user code at all:
+Lots of stdlib procedures take an enum, because the Scratch block behind them has a
+dropdown. There are two ways to write one, and they compile to the same blocks:
 
 ```katnip
-motion.goTo(motion.Target.RANDOM);   # error: Type 'Target' has no member 'RANDOM'
-motion.goTo(Target.RANDOM);          # error: 'Target' is not defined
-motion.goTo("_random_");             # ✅ this works
+motion.setRotationStyle(motion.RotationStyle.LEFT_RIGHT);   # the member
+motion.setRotationStyle("left-right");                      # a literal that matches it
 ```
 
-Where the parameter type is a union with `str`, pass the string — every value in this
-documentation is listed. Where it is not, the procedure is unusable until the gap closes.
+A literal that misses is an error listing the members, with a did-you-mean. Every page here
+gives the full member table so you can use either style.
 
-Enums declared in the **prelude** have no namespace and work normally:
+Enums declared inside a namespace stay **out of global scope**, so reach them through the
+namespace. Prelude enums have no namespace and are bare names:
 
 ```katnip
-events.onKey(Key.SPACE);           # ✅
-stop(StopType.THIS_SCRIPT);        # ✅
+motion.Target.RANDOM      # ✅
+Target.RANDOM             # error: 'Target' is not defined
+Key.SPACE                 # ✅ prelude
+stop(StopType.ALL);       # ✅ prelude
 ```
+
+{% hint style="warning" %}
+Only a **literal** coerces. A variable or a computed string is rejected — the slot is a
+Scratch menu, a shadow block, so a reporter there is almost always a mistake, and there is
+no cast to override it. See [Known gaps](../reference/known-gaps.md#no-cast-to-an-enum).
+
+The exception is the six menus that also list sprite, costume, and backdrop names —
+`Target`, `TouchTarget`, `DistanceTarget`, `ObjectTarget`, `CloneTarget`, `Backdrop`. Those
+parameters are typed `Enum | str` and take any string, computed or not.
+{% endhint %}

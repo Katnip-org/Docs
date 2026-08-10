@@ -121,6 +121,21 @@ switch (pick) {
 }
 ```
 
+Every label is checked against the switch value's type, so a label that could never match
+is an error. On an enum-typed value a label must be a member or a literal that
+[coerces](enums-and-structs.md#literal-coercion) to one:
+
+```katnip
+enum Team { red = "R", blue = "B" }
+
+switch (side) {            # side: Team
+    case (Team.red) { ... }   # ✅
+    case ("B")      { ... }   # ✅ Team.blue's value
+    case ("R!")     { ... }   # error, with a did-you-mean
+    case (Fruit.apple) { ... } # error, wrong enum
+}
+```
+
 `switch` lowers to an if/else chain, which has two consequences:
 
 * **There is no fallthrough.** Each case is independent; there is no keyword to fall into

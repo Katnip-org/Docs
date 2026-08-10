@@ -9,6 +9,7 @@ to the project automatically — there is nothing to enable.
 pen.down() -> void    ✅
 pen.up() -> void      ✅
 pen.clear() -> void   ✅
+pen.stamp() -> void   ✅
 ```
 
 ```katnip
@@ -43,20 +44,26 @@ pen.setSize(3);
 pen.changeSize(1);
 ```
 
+`stamp` prints the sprite's current costume onto the pen layer, at its current position,
+size, and direction.
+
 ## Colour parameters
 
 ```katnip
-pen.setAttr(attr: ColorParam, value: num) -> void     ⛔ namespaced enum
-pen.changeAttr(attr: ColorParam, dA: num) -> void     ⛔ namespaced enum
+pen.setAttr(attr: ColorParam, value: num) -> void     ✅
+pen.changeAttr(attr: ColorParam, dA: num) -> void     ✅
 ```
 
-`pen.ColorParam` is declared inside the namespace, so its members cannot be referenced.
-Until that gap closes, use `setHex` — cycling a hue by hand works fine:
+Pass the member or the literal — they compile to the same menu shadow:
 
 ```katnip
+pen.setAttr(pen.ColorParam.COLOR, 50);
+pen.setAttr("color", 50);                # identical
+
 proc rainbow(steps: num) -> void {
+    pen.setAttr("color", 0);
     for (i, steps) {
-        pen.setHex(f"#{i}0{i}0{i}0");
+        pen.changeAttr("color", 100 / steps);
         motion.forward(5);
         motion.turn(360 / steps);
     }
@@ -71,9 +78,3 @@ proc rainbow(steps: num) -> void {
 | `SATURATION` | `"saturation"` |
 | `BRIGHTNESS` | `"brightness"` |
 | `TRANSPARENCY` | `"transparency"` |
-
-## Note on stamping
-
-There is no `pen.stamp()`, and unlike some other unwrapped blocks you cannot reach it by
-binding the opcode yourself — codegen has no slot metadata for `pen_stamp` and will throw.
-The seven procedures above are the whole usable pen surface today.

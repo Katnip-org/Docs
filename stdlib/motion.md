@@ -19,9 +19,9 @@ motion.turn(-90);
 
 ```katnip
 motion.goTo(x: num, y: num) -> void                  ✅
-motion.goTo(position: Target | str) -> void          ✅ with a string
+motion.goTo(position: Target | str) -> void          ✅
 motion.glideTo(time: num, x: num, y: num) -> void    ✅
-motion.glideTo(time: num, position: Target | str)    ✅ with a string
+motion.glideTo(time: num, position: Target | str)    ✅
 ```
 
 ```katnip
@@ -32,13 +32,14 @@ motion.glideTo(1, 100, 50);
 motion.glideTo(1, "_random_");
 ```
 
-Target strings: `"_random_"`, `"_mouse_"`, or a sprite's name.
+Target strings: `"_random_"`, `"_mouse_"`, or a sprite's name. This menu also lists sprite
+names, so the parameter keeps its `| str` arm and takes a computed name too.
 
 ## Pointing
 
 ```katnip
-motion.point(degrees: num) -> void        ✅
-motion.point(target: Target) -> void      ⛔ namespaced enum
+motion.point(degrees: num) -> void            ✅
+motion.point(target: Target | str) -> void    ✅
 ```
 
 ```katnip
@@ -46,14 +47,14 @@ motion.point(90);        # right
 motion.point(0);         # up
 motion.point(-90);       # left
 motion.point(180);       # down
+
+motion.point("_mouse_");
+motion.point(motion.Target.MOUSE);   # identical
+motion.point("Apple");               # another sprite
 ```
 
-The `point(target)` overload takes a bare `Target` with no `str` arm, so it cannot be
-called. To point at the mouse, aim with `sensing.mouseX` / `mouseY`, or glide instead:
-
-```katnip
-motion.glideTo(0, "_mouse_");     # 0-second glide ≈ go to
-```
+The overloads resolve on the argument type, so a `num` picks
+`motion_pointindirection` and a string picks `motion_pointtowards`.
 
 ## Changing x and y
 
@@ -73,7 +74,12 @@ motion.setX(0);
 
 ```katnip
 motion.ifOnEdgeBounce() -> void                   ✅
-motion.setRotationStyle(style: RotationStyle)     ⛔ namespaced enum
+motion.setRotationStyle(style: RotationStyle)     ✅
+```
+
+```katnip
+motion.setRotationStyle(motion.RotationStyle.LEFT_RIGHT);
+motion.setRotationStyle("left-right");            # identical
 ```
 
 ## Not available
@@ -100,8 +106,8 @@ temp cx: num = sensing.getProperty("x position", "Cat");
 
 ## Full enum reference
 
-These are declared in the namespace and are **not reachable** from user code. Listed so you
-know which strings the union arms accept:
+Reference a member through the namespace (`motion.Target.RANDOM`), or pass the value as a
+literal — both compile to the same block.
 
 | `motion.Target` | Value |
 | --- | --- |

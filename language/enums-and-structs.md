@@ -68,31 +68,101 @@ proc effectiveness(attacker: Element, defender: Element) -> num {
 }
 ```
 
-`switch` over an enum is **not** checked for exhaustiveness. Always add a `default`.
+A `case` label is checked against the switch value's type, so a label that could never
+match is an error rather than a dead branch:
+
+```katnip
+switch (pick) {
+    case (Team.red) { ... }   # error, if pick is a Fruit
+}
+```
+
+`switch` over an enum is still **not** checked for exhaustiveness. Always add a `default`.
+
+### Literal coercion
+
+A **literal** whose value is one of an enum's member values is assignable to that enum:
+
+```katnip
+enum Team { red = "R", blue = "B" }
+
+temp t: Team = "R";          # same as Team.red
+```
+
+Both forms fold to the identical value, so they emit identical blocks. This is what makes
+the standard library's menu parameters pleasant to call:
+
+```katnip
+pen.setAttr(pen.ColorParam.COLOR, 10);
+pen.setAttr("color", 10);                 # identical output
+```
+
+The rule lives in assignability itself, so it applies everywhere a value meets a type —
+arguments, initializers, assignments, `return`, struct field defaults, list and dict
+elements, and `case` labels.
+
+A literal that misses gets the member list and a did-you-mean:
+
+```
+"colour" is not a value of enum 'ColorParam'; must be one of:
+"color", "saturation", "brightness", "transparency". Did you mean "color"?
+```
+
+Coercion matches the **lowered** value, which is the one qualification affects. For an enum
+whose members are implicit, that means the qualified string:
+
+```katnip
+enum Fruit { apple, banana }
+
+temp f: Fruit = "Fruit.apple";   # ✅ but nobody writes this
+temp g: Fruit = "apple";         # error: not a value of enum 'Fruit'
+temp h: Fruit = Fruit.apple;     # ✅ write this
+```
+
+So coercion is really for enums with explicit values — which is every enum that feeds a
+Scratch menu. On your own implicit enums, keep using the member.
+
+{% hint style="warning" %}
+Only a **literal** coerces. A variable, a call, or a concatenation of the backing type is
+rejected, and there is no `Enum(x)` cast to force one:
+
+```katnip
+temp attr: str = "color";
+pen.setAttr(attr, 10);       # error: expects one of its members here, not a computed 'str'
+```
+
+The slot is a Scratch *menu* — a shadow block — so a reporter there is legal but almost
+always a mistake. See [Known gaps](../reference/known-gaps.md#no-cast-to-an-enum).
+{% endhint %}
 
 ### Enums declared inside a namespace
 
 The standard library declares enums like `motion.RotationStyle` and `looks.GraphicEffect`
-inside its namespaces. **Those members are not reachable from user code** —
-`motion.RotationStyle.LEFT_RIGHT` is a semantic error.
-
-The prelude enums are reachable, because the prelude has no namespace:
+inside its namespaces. Reference them through the namespace:
 
 ```katnip
-Key.SPACE            # works
-StopType.ALL         # works
-motion.Target.RANDOM # error: Type 'Target' has no member 'RANDOM'
+motion.setRotationStyle(motion.RotationStyle.LEFT_RIGHT);   # ✅
+looks.setEffect(looks.GraphicEffect.GHOST, 50);             # ✅
 ```
 
-Where the parameter accepts `Enum | str`, pass the string:
+A namespaced enum stays **out of global scope** — the bare name is undefined:
 
 ```katnip
-motion.goTo("_random_");
-sensing.touching("_edge_");
+motion.setRotationStyle(RotationStyle.LEFT_RIGHT);   # error: 'RotationStyle' is not defined
 ```
 
-Where it does not, the procedure is currently unusable. The full list is in
-[Known gaps](../reference/known-gaps.md#namespaced-enum-members-are-unreachable).
+The prelude enums have no namespace, so they *are* bare names:
+
+```katnip
+Key.SPACE            # ✅
+StopType.ALL         # ✅
+```
+
+{% hint style="info" %}
+Members of a stdlib enum written **without** `=` fold to the bare member name, not the
+qualified one — `looks.GraphicEffect.GHOST` is `"GHOST"`, which is what the Scratch field
+expects. The qualification rule above applies to enums you declare yourself.
+{% endhint %}
 
 ## Structs
 

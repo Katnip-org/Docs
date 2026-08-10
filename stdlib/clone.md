@@ -3,9 +3,9 @@
 Clone lifecycle. Three procedures, all working.
 
 ```katnip
-clone.onStart() { ... }                        ✅   # hat
-clone.create(target: CloneTarget | str) -> void ✅   # with a string
-clone.delete() -> void                         ✅
+clone.onStart() { ... }                         ✅   # hat
+clone.create(target: CloneTarget | str) -> void ✅
+clone.delete() -> void                          ✅
 ```
 
 ## A complete clone
@@ -80,4 +80,5 @@ there is no error, the clone just never starts. Delete clones when they finish.
 | --- | --- |
 | `MYSELF` | `"_myself_"` |
 
-Declared inside the namespace and therefore unreachable — pass `"_myself_"`.
+`clone.CloneTarget.MYSELF` and `"_myself_"` compile to the same block. The menu also lists
+sprite names, so the parameter keeps its `| str` arm and takes a computed name.

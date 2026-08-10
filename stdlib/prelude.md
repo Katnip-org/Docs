@@ -45,17 +45,23 @@ Used by `events.onKey` and `sensing.keyPressed`.
 | `Key.DOWN_ARROW` | `"down arrow"` |
 | `Key.ANY` | `"any"` |
 | `Key.NUM_0` … `Key.NUM_9` | `"0"` … `"9"` |
-| `Key.a` … `Key.z` | *implicit* |
+| `Key.a` … `Key.z` | `"a"` … `"z"` |
 
-{% hint style="warning" %}
-The letter members `Key.a` … `Key.z` have no explicit value, so they fold to the qualified
-string `"Key.a"`, which Scratch will not match. For letter keys pass the string directly:
+The letter members have no explicit value. Because `Key` is a stdlib enum, they fold to the
+bare member name — `Key.a` is `"a"`, which is exactly what the Scratch field wants — so
+both forms work everywhere:
 
 ```katnip
-sensing.keyPressed("a");        # the parameter accepts Key | str
+events.onKey(Key.a) { ... }
+events.onKey("a") { ... }               # identical
+sensing.keyPressed(Key.UP_ARROW);
+sensing.keyPressed("up arrow");         # identical
 ```
 
-`events.onKey` takes a bare `Key`, so letter keys are not usable there yet.
+{% hint style="warning" %}
+`Key` is the whole keyboard menu, so a literal is checked against it. `"ctrl"` or `"A"` is
+an error listing every key. Both parameters are a bare `Key` — a computed string is not
+accepted; see [Known gaps](../reference/known-gaps.md#no-cast-to-an-enum).
 {% endhint %}
 
 ## Strings and variables

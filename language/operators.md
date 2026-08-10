@@ -80,25 +80,19 @@ turn a `num` into a `str`, because the `Str()` cast is not lowered yet:
 temp s: str = f"{count}";
 ```
 
-{% hint style="warning" %}
-**No string literal can appear inside an interpolation** — of either quote style. The
-lexer's string handling does not return to the interpolated-expression state when the
-inner string closes, so everything after it is swallowed:
+An interpolation is a full expression, and it may contain strings — of either quote style,
+and f-strings of their own. The lexer keeps a stack of string frames, so nesting resumes
+the outer string correctly:
 
 ```katnip
-looks.say(f"{countChar("banana", "a")}");   # ⛔ parse error
-looks.say(f"{countChar('banana', 'a')}");   # ⛔ same, single quotes do not help
+looks.say(f"{countChar("banana", "a")}");     # ✅
+looks.say(f"{countChar('banana', 'a')}");     # ✅
+looks.say(f"outer {f"inner {name}"} end");    # ✅
 ```
 
-Pull the call out first:
-
-```katnip
-temp reps: num = countChar("banana", "a");
-looks.say(f"{reps}");                       # ✅
-```
-
-Single-quoted strings work fine everywhere *else* — `temp s: str = 'hi';` is valid.
-{% endhint %}
+An **unterminated** string — a missing closing quote, or a `{` interpolation never closed —
+is reported as `Unterminated string literal` at the position the string opened, rather than
+swallowing the rest of the file.
 
 ### String indexing and length
 

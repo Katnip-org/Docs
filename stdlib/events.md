@@ -10,7 +10,8 @@ events.onKey(key: Key) { ... }                           ✅
 events.onClick() { ... }                                 ✅
 events.onBackdropSwitch(backdrop: str) { ... }           ✅
 events.onBroadcast(broadcast: str) { ... }               ✅
-events.onGreaterThan(property, threshold: num) { ... }   ⛔
+events.onGreaterThan(property: GreaterThanProperty,
+                     threshold: num) { ... }              ✅
 ```
 
 ```katnip
@@ -38,21 +39,29 @@ sprite Cat {
 }
 ```
 
-### `onGreaterThan` is unusable
+### `onGreaterThan`
 
-Its `property` parameter is `GreaterThanProperty`, an enum declared inside the `events`
-namespace — and namespaced enum members cannot be referenced from user code. Poll instead:
+Scratch's `when [loudness/timer] > ()` hat. Two properties, either spelling:
 
 ```katnip
-events.onFlag() {
-    while (true) {
-        if (sensing.timer() > 10) {
-            looks.say("time!", 1);
-            sensing.resetTimer();
-        }
+sprite Cat {
+    events.onGreaterThan(events.GreaterThanProperty.TIMER, 10) {
+        looks.say("time!", 1);
+        sensing.resetTimer();
+    }
+
+    events.onGreaterThan("LOUDNESS", 30) {
+        looks.say("loud!", 1);
     }
 }
 ```
+
+| `events.GreaterThanProperty` | Literal form |
+| --- | --- |
+| `LOUDNESS` | `"LOUDNESS"` |
+| `TIMER` | `"TIMER"` |
+
+These members have no explicit value, so the literal form is the member name, uppercase.
 
 ## Broadcasts
 
