@@ -14,7 +14,7 @@ read depending on what you want to do.
 | Understand `public` / `private` properly | [Variables](/language/variables/) |
 | Use dicts, or work around the missing methods | [Lists and dicts](/language/collections/) |
 | Name your constants | [Enums and structs](/language/enums-and-structs/) |
-| Split a project across files *(check only)* | [Modules](/language/modules/) |
+| Split a project across files | [Modules](/language/modules/) |
 
 ## Recursion works — try it
 
@@ -45,33 +45,35 @@ You did this in project 2. It generalises:
 ```katnip
 proc random(@opcode = "operator_random", from: num, to: num) -> num {}
 proc round(@opcode = "operator_round", value: num) -> num {}
-proc mathop(@opcode = "operator_mathop", operator: str, num: num) -> num {}
 proc x(@opcode = "motion_xposition") -> num {}
 proc y(@opcode = "motion_yposition") -> num {}
 
-private root: num = mathop("sqrt", 16);
+private roll: num = random(1, 6);
 ```
 
-`operator_mathop` alone covers `abs`, `floor`, `ceiling`, `sqrt`, `sin`, `cos`, `tan`,
-`asin`, `acos`, `atan`, `ln`, `log`, `e ^`, and `10 ^`.
+`operator_mathop` no longer needs this — `math` wraps it, so `math.sqrt`, `math.floor`,
+`math.ln` and the trig functions are all there. See [math](/stdlib/math-console/#math).
 
 This works for any opcode codegen has slot metadata for; unknown ones fail the build rather
 than emitting a broken project. See [Decorators](/language/decorators/#opcode).
 
 ## Read the real examples
 
-The compiler repository ships `examples/codegen.knip` — a deliberately exhaustive project
-exercising everything the pipeline lowers today, with commentary. It is the best single
-reference for "does this actually build", and it is kept passing.
+The compiler repository ships two files that are kept building, and they are the best
+single reference for "does this actually build". `examples/all.knip` uses every feature
+that lowers, exactly once each, with a comment on every line;
+`examples/codegen.knip` is a fuller project, including a recursive `fib`.
 
 ```bash
+katnip build examples/all.knip
 katnip build examples/codegen.knip
 ```
 
 :::caution
-Other files in `examples/` — `example.knip`, `showcase.knip`, `stdlib.knip` — are
-analyzer tests. They use `console.log`, `zip`, `**`, and imports, and they **do not
-build**. Do not copy from them.
+Other files in `examples/` — `example.knip`, `showcase.knip`, `stdlib.knip`, `proc.knip`,
+`overload.knip`, `oos.knip`, `typeof.knip` — are older analyzer tests. They use
+`console.log`, `typeof`, `math.pow`, and syntax that was never implemented, and they **do
+not build**. Do not copy from them.
 :::
 
 ## Know the edges
@@ -79,11 +81,12 @@ build**. Do not copy from them.
 [Known gaps](/reference/known-gaps/) is the page to read before planning anything
 ambitious. The short version:
 
-* imports do not survive codegen — one file per project
+* four things build and are **silently wrong**: `**`, slices, `range()` used as a value,
+  and tuple-pattern assignment
 * structs do not reach the `.sb3`
-* `**` silently produces a wrong answer
-* `console.*`, the casts, `typeof`, and every dict method fail the build
-* `zip`/`enumerate`/`range` work in a `for` header, but fail the build used as a plain value
+* `console.*`, `typeof`, `list.merge`, and every dict method fail the build
+* `zip`/`enumerate` work in a `for` header, but fail the build used as a plain value
+* imports build — procedures and literal constants cross, module variables do not
 * an enum slot takes a member or a matching literal, but never a computed value
 * no asset import
 
@@ -103,7 +106,7 @@ complete picture.
 ## Contribute
 
 The roadmap, in the maintainers' own priority order, is at the bottom of
-[Feature status](/reference/feature-status/). Lowering imports is item one, and it would unblock
-more real projects than anything else on the list.
+[Feature status](/reference/feature-status/). Closing the silently-wrong gaps is item one —
+a project that builds and lies is worse than one that refuses to build.
 
 [github.com/Katnip-org/Katnip](https://github.com/Katnip-org/Katnip)

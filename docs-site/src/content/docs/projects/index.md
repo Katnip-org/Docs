@@ -41,9 +41,10 @@ sprites are the Scratch cat until you add costumes by hand in the editor. Positi
 and colour are all you have to tell them apart. Plan visuals accordingly, or add costumes
 after building.
 
-**Some things type-check and then fail to build.** `console.log` is the one you will hit
-first — it appears in older examples and does not compile. Skim
-[Known gaps](/reference/known-gaps/) once before you start; it is short, and it will
-save you a confusing half hour.
+**Some things type-check and then fail to build — and a few build and are wrong.**
+`console.log` is the failure you will hit first; it appears in older examples and does not
+compile. The `**` operator is the quiet one: it builds, and gives you an empty value with no
+error. Skim [Known gaps](/reference/known-gaps/) once before you start; it is short, and it
+will save you a confusing half hour.
 
 Ready? [Start with the square.](/projects/01-draw-a-square/)

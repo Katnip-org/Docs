@@ -78,6 +78,10 @@ If an opcode reaches this stage without slot metadata — which is how the unimp
 `katnip_*` builtins fail — codegen throws rather than emitting a broken project. A build
 that succeeds produces a project that loads.
 
+It does not guarantee the project is *right*. A handful of constructs are lowered to an
+empty literal or skipped outright, so they build and then misbehave at runtime — see
+[Known gaps](/reference/known-gaps/) for the list.
+
 ## Seeing inside
 
 Every intermediate stage has a CLI command, which is the fastest way to answer "what did

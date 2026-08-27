@@ -46,7 +46,8 @@ proc tally() -> void {
 ### Working around `remove`
 
 `remove` is declared `@lower = "yields"` — it both mutates and returns, which the IR has no
-lowering for. Rebuild instead:
+lowering for. It does not report that cleanly either: the build crashes with an internal
+`TypeError: Cannot read properties of undefined (reading 'mangled')`. Rebuild instead:
 
 ```katnip
 public scores: list<num> = [];
@@ -63,6 +64,9 @@ proc removeValue(target: num) -> void {
 ```
 
 ### Working around `merge`
+
+`merge` resolves to `katnip_list_merge`, which has no codegen metadata — the build fails
+with `no slot metadata for 'katnip_list_merge'`. Append in a loop instead:
 
 ```katnip
 for (item, other) {
@@ -139,8 +143,9 @@ f"{greeting} {name}";       # interpolation, also join
 for (letter, greeting) { ... }
 ```
 
-There is no `split`, `replace`, `toUpper`, `trim`, or slicing. Build what you need by
-walking characters:
+There is no `split`, `replace`, `toUpper`, or `trim`. Slice syntax parses but lowers to an
+empty string — see [Known gaps](/reference/known-gaps/#slices-lower-to-an-empty-string).
+Build what you need by walking characters:
 
 ```katnip
 proc countChar(s: str, target: str) -> num {

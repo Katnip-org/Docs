@@ -11,9 +11,9 @@ Status of every language and toolchain feature, tracked against the compiler pip
 | 🟡 | Partial; implemented at some stages, named per row |
 | 🔴 | Not implemented, or implemented only far enough to type-check |
 
-Last verified against `main` (compiler `0.1.15`, VS Code extension `0.0.14`) with a green
-`node --test` run — every case passing except the 7 `todo` cases that pin the gaps below —
-and a clean `katnip build examples/codegen.knip`.
+Last verified against `main` (compiler `0.1.16`, VS Code extension `0.0.16`) with a green
+`node --test` run — 196 cases, 189 passing and 7 `todo` cases pinning the gaps below, one of
+which (imports) now passes — and a clean `katnip build examples/all.knip`.
 
 :::note
 This page mirrors `features.md` in the compiler repository. For the practical "what do I
@@ -34,7 +34,7 @@ write instead" version, see [Known gaps](/reference/known-gaps/).
 * 🟢 **Semantic analyzer** — two-pass (hoist, then walk), scoped symbol table, structured
   `InternalType` with unions, tuples, generics.
 * 🟡 **IR generator** — lowers everything Scratch-shaped, with named gaps below (structs,
-  slices, `**`, imports, `katnip_*` builtins).
+  slices, `**`, tuple destructuring, `katnip_*` builtins).
 * 🟡 **SB3 codegen** — emits blocks, variables, lists, procs, extensions, packs to `.sb3`;
   throws on any opcode missing slot metadata.
 
@@ -160,7 +160,8 @@ write instead" version, see [Known gaps](/reference/known-gaps/).
 * 🟢 **List monitors** — `show()` and `hide()` toggle the project's list monitors.
 * 🟢 **Lists and dicts declared inside a script or proc** — hoisted and refilled on every
   run, rather than baked once like a top-level list.
-* 🔴 **Slices** — `s[1:5:2]` parses and gets a naive type, no lowering.
+* ⛔ **Slices** — `s[1:5:2]` parses and gets a naive type, and lowers to an empty literal.
+  Silently wrong, not an error.
 
 ## Procedures and the return ABI
 
@@ -174,8 +175,10 @@ write instead" version, see [Known gaps](/reference/known-gaps/).
 * 🟢 **Recursion** — verified end to end with `fib` in `examples/codegen.knip`.
 * 🟢 **Argument reporter kinds** — `%s`, `%n`, and `%b` all emitted from the declared
   parameter types.
-* 🟡 **Tuple returns** — the multi-slot frame is emitted, but a call site only reads the
-  first element; no destructuring on the receiving side.
+* ⛔ **Tuple returns** — the multi-slot frame is emitted, but a call site only reads the
+  first element, and a tuple-pattern assignment — `(a, b) = f();` — is skipped entirely, so
+  the call never happens. Silently wrong; see
+  [Known gaps](/reference/known-gaps/#tuple-destructuring-drops-the-call).
 * 🔴 **List and dict returns** — explicitly rejected by the analyzer, since the frame width
   is not statically known.
 * 🔴 **`@lower = "yields"` procs** — declared in the stdlib (`list.remove`,
@@ -189,9 +192,13 @@ write instead" version, see [Known gaps](/reference/known-gaps/).
 * 🟢 `@warp` — runs the proc without screen refresh.
 * 🟢 `@lower` — one of `reporter`, `command`, `userproc`, `builds`; `yields` is accepted but
   unlowered.
+* 🟢 `@proccode` — sets a user proc's Scratch custom-block label. One `%name` (or bare
+  `%s`/`%n`/`%b`) placeholder per parameter, in declaration order; the declared parameter
+  type picks the final spec. Checked — a wrong count or a reordered placeholder is an error.
 * 🟢 `@operator` — binds a `builds` proc to a binary operator, so the IR routes that operator
   through it.
 * 🟢 `@ret` — picks the return strategy.
+* 🔴 `@doc`, `@constants` — parse, and nothing reads them.
 
 ## Modules
 
@@ -203,9 +210,12 @@ write instead" version, see [Known gaps](/reference/known-gaps/).
   documents, so a browser playground can supply virtual files.
 * 🟢 **Namespacing and visibility** — imported symbols live under a namespace, only `public`
   ones cross, and imports are never re-exported.
-* 🔴 **Lowering imported code** — the IR walks only the entry file, so calling an imported
-  proc type-checks and then fails codegen with `call to unknown proc`. Imports are
-  analysis-only today.
+* 🟢 **Lowering imported code** — an imported proc is lowered into every target that calls
+  it, transitively, and an imported literal constant folds at the call site.
+* 🔴 **Imported module state** — a variable or list declared in an imported module does not
+  cross. Reading one is a check error (*only members with a literal initializer are
+  supported*); an imported proc that touches its own module's variable fails codegen with
+  `undeclared variable`.
 
 ## Structs
 
@@ -241,16 +251,24 @@ the compiler cannot enumerate — `Target`, `TouchTarget`, `DistanceTarget`, `Ob
   declared in the project automatically.
 * 🟢 **`clone`** — `onStart`, `create`, `delete`.
 * 🟡 **`list`** — `add`, `contains`, `length`, `clear`, `indexOf`, `show`, `hide` are 🟢;
-  `remove` is 🔴 (yields), `merge` is 🔴 (`katnip_list_merge`).
-* 🟡 **`math`** — `pi`, `e`, `tau` fold to literals 🟢; `pow` is a stub with an empty body 🔴.
+  `remove` is 🔴 (yields — it crashes the IR rather than reporting), `merge` is 🔴
+  (`katnip_list_merge`).
+* 🟢 **`math`** — `pi`, `e`, `tau` fold to literals; the `MathOp` enum and `op` wrap
+  `operator_mathop`, and `abs`, `floor`, `ceil`, `sqrt`, `sin`, `cos`, `tan`, `asin`,
+  `acos`, `atan`, `ln`, `log`, `epow` are `builds` procs over it. `pow` was removed rather
+  than fixed. No `random`, `min`, `max` or `round` yet.
 * 🟡 **`str`** — `contains` is 🟢; the rest of the string surface is not written yet.
 * 🔴 **`dict`** — `contains`, `length`, `keys`, `values`, `merge` all resolve to `katnip_*`
   opcodes with no codegen metadata.
 * 🔴 **`console`** — `log`, `warn`, `error` are `katnip_*`; `input` is a yields proc.
-* 🔴 **Casts and helpers** — `Num`, `Str`, `Bool`, `List`, `typeof`, `motion.getPosition`,
-  and `range()`/`zip()`/`enumerate()` used *as a value* all type-check but have no codegen
-  metadata; using one throws `no slot metadata`. In a `for` header all three iteration
-  helpers are 🟢 — they are folded into the loop, never built.
+* 🟢 **Casts** — `Num`, `Str` and `Bool` are `builds` procs that inline the value unchanged.
+  They are type-checker assertions, not runtime conversions. `List` was removed from the
+  prelude; there is no list cast.
+* 🔴 **Helpers** — `typeof` and `motion.getPosition` have no codegen metadata; using one
+  throws `no slot metadata`.
+* 🟡 **Iteration helpers** — in a `for` header `range()`, `zip()` and `enumerate()` are 🟢,
+  folded into the loop and never built. Used *as a value*, `zip` and `enumerate` throw
+  `no slot metadata` 🔴, and `range` is worse — it silently produces an ⛔ **empty list**.
 
 :::note
 Every enum-typed parameter above is reachable two ways: the namespaced member
@@ -291,9 +309,11 @@ Every enum-typed parameter above is reachable two ways: the namespaced member
   them.
 * 🟢 **VS Code extension** — live diagnostics on type or on save with a configurable
   debounce, syntax highlighting, language configuration, and a `Katnip: Build .sb3` command.
+* 🟢 **Warnings** — a non-blocking severity alongside errors; `no sprites declared, so this
+  builds to an empty project` is the only one today.
 * 🟢 **Tests** — `node --test` cases across lexer, parser, semantic, callgraph, imports, IR,
   and codegen, plus 7 `todo` cases in `gaps.test.ts` that assert each gap on this page is
-  still a gap, so closing one fails loudly.
+  still a gap, so closing one fails loudly. The imports case now passes.
 * 🟢 **Public API** — `checkSource`, `compileToIR` and `compileToSb3` exported for embedding,
   with a pluggable import resolver.
 * 🔴 **Language server** — the extension shells the compiler directly; no LSP, no
@@ -305,11 +325,11 @@ Every enum-typed parameter above is reachable two ways: the namespaced member
 
 ## Roadmap — nearest gaps, in rough order
 
-1. Lower imported procs and variables, so `import` stops failing at codegen.
-2. Give the `katnip_*` builtins real lowerings; casts, `console`, `typeof`, and the dict
-   methods are the widest hole.
+1. Close the silently-wrong gaps — `**`, slices, `range()` as a value, and tuple-pattern
+   assignment — since each builds a project that runs and lies.
+2. Give the remaining `katnip_*` builtins real lowerings; `console`, `typeof`, `list.merge`
+   and the dict methods are the widest hole.
 3. Lower structs; the analyzer is already complete for them.
-4. Implement `**`, which today lowers silently to an empty literal.
+4. Lower imported module variables and lists, so a module can own state.
 5. Lower `@lower = "yields"` procs, unblocking `list.remove` and `console.input`.
-6. Read tuple returns at a call site; the ABI already carries the extra slots.
-7. Attach comments to the AST and emit them into the sb3 comment map.
+6. Attach comments to the AST and emit them into the sb3 comment map.

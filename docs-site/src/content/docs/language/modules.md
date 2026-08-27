@@ -2,13 +2,13 @@
 title: "Modules and imports"
 ---
 
-:::danger
-**Imports are analysis-only today.** The IR walks only the entry file, so calling an
-imported procedure type-checks and then fails codegen with `call to unknown proc`.
+:::note
+**Imports build now.** An imported procedure is lowered into every target that calls it,
+including the procedures it calls in turn, and an imported literal constant folds at the
+call site.
 
-Everything on this page works for `katnip check`. None of it survives `katnip build` yet.
-Keep buildable projects in a single file until this lands — it is the number one item on
-the roadmap.
+The one thing that does not cross is **mutable module state** — see
+[What crosses a file boundary](#what-crosses-a-file-boundary).
 :::
 
 ## Importing
@@ -55,6 +55,35 @@ import "./lib.knip";
 private a: num = lib.sides;        # ok
 private b: num = lib.secret;       # error: 'secret' is private
 ```
+
+## What crosses a file boundary
+
+A `public` **procedure** and a `public` **constant with a literal initializer** cross and
+build. A `public` **variable or list** does not:
+
+```katnip
+# lib.knip
+public SIDES: num = 3;                  # literal — crosses, folds at the call site
+public counter: num = 0;                # variable — does not cross
+public shared: list<num> = [1, 2];      # list — does not cross
+
+public proc twice(n: num) -> num { return n * 2; }
+public proc bump() -> void { counter += 1; }
+```
+
+```katnip
+# main.knip
+import "./lib.knip";
+
+private a: num = lib.SIDES;      # ✅ folds to 3
+private b: num = lib.twice(4);   # ✅ the proc is lowered into this target
+private c: num = lib.shared[1];  # 🔴 check: only members with a literal initializer are supported
+lib.bump();                      # 🔴 build: undeclared variable 'counter'
+```
+
+An imported procedure may take parameters and return a value, but it cannot touch a
+variable or list declared in its own module — that variable is never emitted. Keep shared
+state in the entry file and pass it through parameters and returns.
 
 ## Imports are not re-exported
 

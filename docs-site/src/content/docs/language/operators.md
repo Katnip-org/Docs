@@ -124,7 +124,9 @@ private turns: num = math.pi * 2;      # 3.141592653589793 * 2
 ```
 
 `range()` in a `for` header is folded into the loop counter, with constant folding on
-literal `start` / `stop` / `step`. It is never built as a list.
+literal `start` / `stop` / `step`. It is never built as a list. Outside a `for` header it
+silently produces an empty list — see
+[Known gaps](/reference/known-gaps/#range-as-a-value-builds-an-empty-list).
 
 ## Precedence
 
@@ -141,6 +143,9 @@ unary  -  !
 ||  !|
 ```
 
+Every binary operator is **left-associative**, so `10 - 3 - 2` is `(10 - 3) - 2`. The one
+exception is `**`, which binds to the right — and does not work anyway.
+
 When in doubt, parenthesise. It costs nothing in the output — the block tree is the same
 either way.
 
@@ -152,7 +157,8 @@ private x: num = base ** 2;    # DO NOT USE
 
 The `**` operator parses and type-checks, but Scratch has no power block and Katnip has no
 `builds` procedure for it yet, so the IR **silently** lowers it to an empty literal. No
-error, wrong answer. `math.pow` is a stub with an empty body and has the same problem.
+error, wrong answer. `math.pow` was removed from the stdlib rather than fixed, so calling it
+is at least a clean check error.
 
 For a whole-number exponent, write the multiplication out or use a loop:
 
@@ -170,3 +176,11 @@ proc pow(base: num, exp: num) -> num {
 The `result` above is clobbered by recursion — but this `pow` does not recurse, so it
 is safe. See [Variables](/language/variables/#a-variable-declared-inside-a-procedure-is-not-a-local).
 :::
+
+For a fractional exponent, go through the natural log, which `math` does wrap:
+
+```katnip
+private half: num = math.epow(0.5 * math.ln(16));    # 16 ** 0.5 -> 4
+```
+
+Undefined for a negative base, so guard it if the base can go below zero.

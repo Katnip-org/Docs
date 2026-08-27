@@ -177,9 +177,10 @@ Three things about lists:
 * **`treatNames` and `treatScores` are baked into the project file**, because every element
   is a literal. If any element needed a block to compute, the whole list would instead be
   rebuilt by a green-flag script — which matters when another script reads it early.
-* **`history` must be declared at the top level.** A list declared inside a proc or handler
-  is not lowered. Scratch has no local lists either, so this is less of a restriction than
-  it sounds.
+* **`history` is declared at the top level so it is baked into the project file.** A list
+  declared inside a proc or handler does lower, but it is cleared and refilled at that
+  point on every run — fine for scratch space, wrong for something you want to accumulate
+  across runs.
 
 `history.show()` puts the list monitor on the stage — the cheapest debugger you have, since
 `console.log` does not compile.

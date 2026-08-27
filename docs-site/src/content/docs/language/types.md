@@ -51,8 +51,10 @@ matter where they were written. They are used for multi-value returns and for th
 `(key, value)` binding in a dict `for` loop.
 
 :::caution
-You cannot destructure a tuple returned from a procedure yet, and a call site reads only
-the first element. See [Known gaps](/reference/known-gaps/#tuple-returns-read-only-the-first-slot).
+You cannot destructure a tuple returned from a procedure yet. A call site reads only the
+first element, and a tuple-pattern assignment — `(a, b) = f();` — is dropped entirely, so
+the call never runs and both variables keep their old values. No error is reported. See
+[Known gaps](/reference/known-gaps/#tuple-destructuring-drops-the-call).
 :::
 
 ## Unions
@@ -137,15 +139,26 @@ You cannot declare your own generic procedures — typevars are a stdlib facilit
 
 ## Type conversion
 
-Katnip does *not* silently convert. `num` into a `str` slot is an error, and the casts
-that would fix it are declared but not yet lowered:
+Katnip does *not* silently convert. `num` into a `str` slot is an error. Three prelude
+casts fix that, and they build:
 
 ```katnip
-private s: str = Str(42);   # type-checks, then fails at codegen
+private s: str = Str(42);       # ✅
+private n: num = Num(answer);   # ✅
+private b: bool = Bool(flag);   # ✅
 ```
 
-Until they land, use an interpolated string, which lowers to `join` and produces a `str`:
+They are `@lower = "builds"` procedures whose body is the value itself, so a cast **inlines
+the value unchanged** — it changes the type the checker sees and emits no block of its own.
+Scratch coerces at runtime anyway, so there is nothing for it to do; `Num("abc")` is still
+`"abc"` in the block tree, not `0`.
+
+If you want a *real* `num` → `str` conversion in the output, an interpolated string lowers
+to `join`:
 
 ```katnip
-private s: str = f"{42}";   # works today
+private s: str = f"{42}";
 ```
+
+There is no `List()` cast — it was removed from the prelude — and `typeof()` still fails the
+build.

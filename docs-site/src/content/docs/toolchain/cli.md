@@ -39,9 +39,10 @@ Lex, parse, and analyze. Prints `No semantic errors found.` or the diagnostics. 
 `build` because it skips IR and codegen.
 
 :::caution
-`check` passing does **not** mean `build` will succeed. Several features are complete in
-the analyzer and absent from the IR — structs, imports, `console.*`, the casts. See
-[Known gaps](/reference/known-gaps/).
+`check` passing does **not** mean `build` will succeed, and it does not mean the project is
+right. Some features are complete in the analyzer and absent from the IR — `console.*`,
+`typeof` and the dict methods fail the build; structs, `**`, slices and tuple destructuring
+build and are silently wrong. See [Known gaps](/reference/known-gaps/).
 :::
 
 ### `lower`

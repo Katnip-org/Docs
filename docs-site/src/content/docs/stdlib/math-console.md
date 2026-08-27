@@ -19,17 +19,55 @@ private turns: num = math.pi * 2;
 motion.forward(10 * math.pi);
 ```
 
-### `math.pow` ⛔
+### Functions ✅
+
+`operator_mathop` is Scratch's one-block maths menu, and `math` wraps it twice: the raw
+`math.op`, plus a named `builds` procedure per operation that inlines to the same block.
 
 ```katnip
-math.pow(base: num, exponent: num) -> num
+math.op(op: MathOp, value: num) -> num     ✅   # operator_mathop
+
+math.abs(value: num)   -> num    ✅        math.ln(value: num)   -> num    ✅
+math.floor(value: num) -> num    ✅        math.log(value: num)  -> num    ✅
+math.ceil(value: num)  -> num    ✅        math.epow(value: num) -> num    ✅   # e ^ value
+math.sqrt(value: num)  -> num    ✅
+
+math.sin(value: num)  -> num    ✅         math.asin(value: num) -> num    ✅
+math.cos(value: num)  -> num    ✅         math.acos(value: num) -> num    ✅
+math.tan(value: num)  -> num    ✅         math.atan(value: num) -> num    ✅
 ```
 
-Declared with an **empty body** and no opcode. It type-checks and produces nothing. The
-`**` operator has the same gap and is worse — it lowers silently to an empty literal, so
-you get a wrong answer with no error.
+```katnip
+private root: num = math.sqrt(16);
+private steps: num = math.floor(distance / 10);
+private same: num = math.op(math.MathOp.SQRT, 16);   # identical output
+```
 
-Write it out:
+Trigonometry is in **degrees**, as everywhere in Scratch.
+
+#### `MathOp`
+
+| Member | Value | | Member | Value |
+| --- | --- | --- | --- | --- |
+| `MathOp.ABS` | `"abs"` | | `MathOp.ASIN` | `"asin"` |
+| `MathOp.FLOOR` | `"floor"` | | `MathOp.ACOS` | `"acos"` |
+| `MathOp.CEIL` | `"ceiling"` | | `MathOp.ATAN` | `"atan"` |
+| `MathOp.SQRT` | `"sqrt"` | | `MathOp.LN` | `"ln"` |
+| `MathOp.SIN` | `"sin"` | | `MathOp.LOG` | `"log"` |
+| `MathOp.COS` | `"cos"` | | `MathOp.EPOW` | `"e ^"` |
+| `MathOp.TAN` | `"tan"` | | | |
+
+Reach it through the namespace — `math.MathOp.SQRT`. A matching literal works too:
+`math.op("sqrt", 16)`.
+
+### There is no `math.pow` ⛔
+
+`math.pow` was **removed** from the stdlib; `math.pow(2, 3)` is now a check error,
+*Namespace 'math' has no member 'pow'*. The `**` operator still parses and is worse — it
+lowers silently to an empty literal, so you get a wrong answer with no error at all. See
+[Known gaps](/reference/known-gaps/#-does-not-work).
+
+For a whole-number exponent, write the loop:
 
 ```katnip
 proc pow(base: num, exp: num) -> num {
@@ -41,26 +79,19 @@ proc pow(base: num, exp: num) -> num {
 }
 ```
 
-That covers whole-number exponents, which is most of what a Scratch project needs. For
-fractional powers, Scratch's `[sqrt v] of ()` block is the practical route — bind it
-yourself:
+For a fractional one, go through the natural log — this is exactly what the removed `pow`
+body did:
 
 ```katnip
-proc mathop(@opcode = "operator_mathop", operator: str, num: num) -> num {}
-
-private root: num = mathop("sqrt", 16);
+private half: num = math.epow(0.5 * math.ln(16));    # 16 ** 0.5 -> 4
 ```
 
-:::note
-`operator_mathop` also covers `abs`, `floor`, `ceiling`, `sqrt`, `sin`, `cos`, `tan`,
-`asin`, `acos`, `atan`, `ln`, `log`, `e ^`, and `10 ^`. It is not in the stdlib yet, so
-binding it yourself is the current answer for all of them.
-:::
+That is undefined for a negative base, so guard it if the base can go below zero.
 
 ### What is missing
 
-No `random`, `min`, `max`, `abs`, `round`, `floor`, or trigonometry. Scratch has blocks for
-all of these; the stdlib has not wrapped them. Bind the opcodes directly:
+No `random`, `min`, `max`, or `round`. Scratch has blocks for all of them; the stdlib has
+not wrapped them. Bind the opcodes directly:
 
 ```katnip
 proc random(@opcode = "operator_random", from: num, to: num) -> num {}

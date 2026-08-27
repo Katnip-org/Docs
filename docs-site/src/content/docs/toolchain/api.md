@@ -129,10 +129,11 @@ const virtualResolver = (specifier, fromPath) => {
 Each file is read and parsed exactly once per compile, no matter how many times it is
 imported. Cycles are detected and reported.
 
-:::danger
-Imports are **analysis-only**. `checkSource` follows them correctly; `compileToSb3` walks
-only the entry file and fails with `call to unknown proc` if the entry calls an imported
-procedure. Build single-file projects until this lands.
+:::note
+Imports build. `compileToSb3` lowers an imported procedure into every target that calls it,
+and folds an imported literal constant at the call site. What does not cross is mutable
+module state: reading an imported variable or list is a check error, and an imported
+procedure that touches its own module's variable fails codegen with `undeclared variable`.
 :::
 
 ## Errors

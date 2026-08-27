@@ -17,7 +17,7 @@ any call becomes.
 
 | Namespace | Covers | Status |
 | --- | --- | --- |
-| [prelude](/stdlib/prelude/) | `wait`, `stop`, `len`, `Key`, `true`/`false` — no namespace prefix | 🟢 mostly |
+| [prelude](/stdlib/prelude/) | `wait`, `stop`, `len`, `Key`, `true`/`false`, casts — no namespace prefix | 🟢 mostly |
 | [events](/stdlib/events/) | hats, broadcasts | 🟢 |
 | [motion](/stdlib/motion/) | movement, turning, position | 🟢 |
 | [looks](/stdlib/looks/) | say/think, costumes, size, effects, layers | 🟢 |
@@ -27,7 +27,7 @@ any call becomes.
 | [list](/stdlib/collections/#list) | list methods | 🟡 |
 | [dict](/stdlib/collections/#dict) | dict methods | 🔴 |
 | [str](/stdlib/collections/#str) | string methods | 🟡 |
-| [math](/stdlib/math-console/#math) | constants and `pow` | 🟡 |
+| [math](/stdlib/math-console/#math) | constants, and `operator_mathop` wrapped per operation | 🟢 |
 | [console](/stdlib/math-console/#console) | `log`, `warn`, `error`, `input` | 🔴 |
 
 🟢 reaches real Scratch blocks · 🟡 partly · 🔴 type-checks but fails the build

@@ -115,16 +115,18 @@ for ((i, name), enumerate(names)) { ... }
 
 All three fold into the loop counter and never build a list or tuple. `range` is 1-based
 and stop-inclusive, like Scratch's own counter — `range(5)` is `1 2 3 4 5`. That `for`
-header is the only place any of them work; used as a plain value, all three have no
-codegen:
+header is the only place any of them work. Used as a plain value they all infer their
+return type correctly and then go wrong, in two different ways:
 
 ```katnip
-private xs: list<num> = range(5);                      # ⛔ no slot metadata
 private paired: (list<str>, list<num>) = zip(names, powers);   # ⛔ no slot metadata
+private tagged: (list<num>, list<str>) = enumerate(names);     # ⛔ no slot metadata
+public  xs: list<num> = range(5);                              # ⛔ builds, and xs is EMPTY
 ```
 
-Both infer their return types correctly and then fail codegen as a value. Walk by index
-instead if you need one outside a `for` header:
+`zip` and `enumerate` fail the build. `range` does not — it silently produces an empty
+list, which is the more dangerous of the two. Walk by index instead if you need one outside
+a `for` header:
 
 ```katnip
 for (i, names.length()) {
@@ -135,21 +137,30 @@ for (i, names.length()) {
 ## Casts
 
 ```katnip
-Num(value: any)  -> num        ⛔
-Str(value: any)  -> str        ⛔
-Bool(value: any) -> bool       ⛔
-List(value: any) -> list<any>  ⛔
+Num(value: any)  -> num        ✅
+Str(value: any)  -> str        ✅
+Bool(value: any) -> bool       ✅
 typeof(value: any) -> str      ⛔
 ```
 
-All five resolve to `katnip_*` opcodes with no codegen metadata. Using one throws
-`no slot metadata` at build time.
+The three casts are `@lower = "builds"` procedures whose body is the value itself, so they
+**inline the value unchanged** and cost nothing in the output:
 
-For `num` → `str`, an interpolated string works today and lowers to `join`:
+```katnip
+private answer: str = sensing.answer();
+private n: num = Num(answer);         # emits the `answer` reporter, nothing around it
+```
+
+That makes them **type-checker assertions, not runtime conversions.** Scratch coerces at
+runtime anyway; `Num("abc")` does not become `0`, it stays `"abc"` in the block tree. Use a
+cast to tell the checker you know what a value is, not to change it.
+
+For `num` → `str`, an interpolated string also works and lowers to a real `join`:
 
 ```katnip
 private s: str = f"{count}";
 ```
 
-Scratch coerces at runtime anyway, so most casts are only about satisfying the type
-checker. Where you need to opt out, annotate `any`.
+`typeof` still resolves to a `katnip_*` opcode with no codegen metadata and throws
+`no slot metadata` at build time. `List()` was removed from the prelude — there is no list
+cast, and none is needed, since a `list<T>` annotation is checked on the declaration.

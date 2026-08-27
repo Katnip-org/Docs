@@ -101,7 +101,35 @@ proc xor(@lower = "builds", @operator = "^", a: bool, b: bool) -> bool {
 
 The prelude uses this for `<=`, `>=`, `^`, `!&`, `!|`, and `!^`.
 
+## `@proccode`
+
+Sets the label Scratch shows on a user procedure's custom block. Without it, the label is
+generated from the procedure and parameter names.
+
+```katnip
+proc add(@proccode = "%x + %y", x: num, y: num) -> void { ... }   # block reads "( ) + ( )"
+proc log(@proccode = "log %s", msg: str) -> void { ... }          # block reads "log ( )"
+proc greet(who: str) -> void { ... }                              # default: "greet who ( )"
+```
+
+Placeholders are `%<parameter name>`, or the bare Scratch specs `%s` / `%n` / `%b`. There
+must be exactly one per parameter, **in declaration order** — Scratch keys a custom block's
+arguments off that order, so a reordered label would produce a project that does not load.
+Both mistakes are errors:
+
+```katnip
+proc add(@proccode = "%x", x: num, y: num) -> void { ... }
+# error: @proccode has 1 placeholder(s) but 'add' takes 2 parameter(s)
+
+proc add(@proccode = "%y + %x", x: num, y: num) -> void { ... }
+# error: @proccode placeholder %y must be %x (parameter 1) or %s/%n/%b
+```
+
+The **declared parameter type wins** over the spec you wrote — `@proccode = "log %s"` on a
+`num` parameter emits `log %n`. `@proccode` is only valid on a procedure Katnip emits as a
+custom block, so pairing it with `@opcode` is an error.
+
 ## Decorators you may see but should not use
 
-Some older examples show `@proccode`, `@doc` and `@constants`. They parse — any identifier
-is accepted as a decorator name — but nothing reads them. They have no effect.
+Some older examples show `@doc` and `@constants`. They parse — any identifier is accepted as
+a decorator name — but nothing reads them. They have no effect.

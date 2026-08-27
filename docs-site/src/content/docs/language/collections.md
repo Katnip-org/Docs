@@ -38,8 +38,9 @@ Every method also has a namespace form — `list.contains(scores, 4)` — but it
 today; codegen looks for a variable named `list`. Use the receiver form.
 
 :::caution
-`scores.remove(i)` and `scores.merge(other)` are declared but **not lowered**. To delete an
-element, rebuild the list; see [Known gaps](/reference/known-gaps/).
+`scores.remove(i)` and `scores.merge(other)` are declared but **not lowered** — `merge`
+fails with `no slot metadata`, and `remove` crashes the IR. To delete an element, rebuild
+the list; see [Known gaps](/reference/known-gaps/).
 :::
 
 ### Iterating
@@ -88,6 +89,23 @@ The `(name, count)` tuple pattern walks both columns together.
 What works today: literals, `d[key]` reads, `d[key] = v` writes, and dict `for` loops.
 :::
 
+### Where a list can be declared
+
+Top level, sprite level, and inside a script or procedure all lower. The difference is
+*when* the contents arrive: a top-level list with all-literal contents is baked into the
+project file, while one declared inside a script is cleared and refilled at that point on
+every run.
+
+```katnip
+events.onFlag() {
+    private xs: list<num> = [1, 2, 3];   # clear, then three `add` blocks, right here
+    looks.say(f"{xs[1]}");
+}
+```
+
+There is still one Scratch list behind it, shared by every run of that script — Scratch has
+no local lists, so a declaration inside a body is a placement, not a scope.
+
 ## How literals reach the project
 
 If every element is a literal, the contents are **baked into the project file** and are
@@ -118,7 +136,9 @@ private has: bool = greeting.contains("at");
 for (letter, greeting) { ... }
 ```
 
-There is no slicing. `s[1:5:2]` parses and gets a naive type, but has no lowering.
+There is no slicing. `s[1:5:2]` parses and gets a naive type, and then lowers to an **empty
+string** — it builds, and the value is wrong. See
+[Known gaps](/reference/known-gaps/#slices-lower-to-an-empty-string).
 
 ## Generic helpers
 
@@ -128,9 +148,12 @@ private tagged: (list<num>, list<str>) = enumerate(names);
 ```
 
 The types infer correctly — `T` binds from the arguments. Used **as a value** like this,
-both are `katnip_*` builtins with no codegen, so this type-checks and then fails the
-build. Use them directly in a `for` header instead, where both fold into the loop counter
-and never build anything:
+both are `katnip_*` builtins with no codegen, so this type-checks and then fails the build
+with `no slot metadata`. `range()` as a value is worse: it builds, and produces an **empty
+list**.
+
+Use all three directly in a `for` header instead, where they fold into the loop counter and
+never build anything:
 
 ```katnip
 for ((name, power), zip(names, powers)) {

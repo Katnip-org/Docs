@@ -16,7 +16,7 @@ Then `Developer: Reload Window`, and open any `.knip` file.
 
 ```bash
 npm run package -w katnip-vscode
-code --install-extension packages/vscode/katnip-vscode-0.0.12.vsix --force
+code --install-extension packages/vscode/katnip-vscode-0.0.16.vsix --force
 ```
 
 The `package` script rebuilds the compiler, vendors it into the extension, and produces the
@@ -51,7 +51,8 @@ have to save to see the effect.
 
 :::caution
 The extension checks but the same [gaps](/reference/known-gaps/) apply. A file with no
-squiggles can still fail `katnip build` — imports and structs being the two you will meet.
+squiggles can still fail `katnip build` — `console.log` and the dict methods being the two
+you will meet — or build and be silently wrong, as `**` and structs are.
 :::
 
 ## What it is not
