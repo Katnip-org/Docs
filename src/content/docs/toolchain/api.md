@@ -2,8 +2,8 @@
 title: "Embedding the compiler"
 ---
 
-The compiler is a normal ES module. Three functions are exported, plus the error type and a
-resolver hook — enough to build a browser playground, a different editor integration, or a
+The compiler is a normal ES module. Three functions are exported, plus the error type and two
+resolver hooks — enough to build a browser playground, a different editor integration, or a
 build step.
 
 ```bash
@@ -74,13 +74,18 @@ JSON.stringify(ir, (_, v) => v instanceof Map ? Object.fromEntries(v) : v, 2);
 
 ```ts
 interface Options {
-    path?: string;              // the entry file's path, for resolving relative imports
+    path?: string;              // the entry file's path, for resolving relative imports and assets
     resolve?: ImportResolver;   // how to fetch an imported file
+    readAsset?: AssetReader;    // how to fetch a costume or sound file
 }
 ```
 
 Imports are only followed when you supply a `resolve`. Without it, the entry file is
 compiled alone.
+
+Assets are only found when you supply a `readAsset`. Without it, every `costume` and
+`sound` declaration is reported as a missing file — a clearer failure than silently
+shipping the default costume.
 
 ## Import resolvers
 
@@ -135,6 +140,30 @@ and folds an imported literal constant at the call site. What does not cross is 
 module state: reading an imported variable or list is a check error, and an imported
 procedure that touches its own module's variable fails codegen with `undeclared variable`.
 :::
+
+## Asset readers
+
+```ts
+type AssetReader = (specifier: string, fromPath: string) => Uint8Array | null;
+```
+
+Same contract as an import resolver, but returning bytes. Return `null` when the file does
+not exist and the compiler reports it against the path in the declaring file.
+
+```js
+import { readFileSync } from "node:fs";
+import path from "node:path";
+
+const fileAssetReader = (specifier, fromPath) => {
+    try {
+        return readFileSync(path.resolve(path.dirname(fromPath), specifier));
+    } catch {
+        return null;
+    }
+};
+```
+
+For a virtual filesystem, key a map by resolved path and return `files[resolved] ?? null`.
 
 ## Errors
 

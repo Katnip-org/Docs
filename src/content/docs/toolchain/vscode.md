@@ -16,7 +16,7 @@ Then `Developer: Reload Window`, and open any `.knip` file.
 
 ```bash
 npm run package -w katnip-vscode
-code --install-extension packages/vscode/katnip-vscode-0.0.16.vsix --force
+code --install-extension packages/vscode/katnip-vscode-0.0.18.vsix --force
 ```
 
 The `package` script rebuilds the compiler, vendors it into the extension, and produces the
@@ -25,7 +25,8 @@ The `package` script rebuilds the compiler, vendors it into the extension, and p
 ## What you get
 
 **Diagnostics as you type.** Errors underline in the editor and list in the Problems panel,
-with the same messages and spans the CLI prints.
+with the same messages and spans the CLI prints. That includes a `costume` or `sound`
+whose file is missing — the path is underlined.
 
 **Syntax highlighting.** A TextMate grammar for `.knip`.
 

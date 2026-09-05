@@ -36,10 +36,10 @@ type-checks — it skips codegen entirely.
 
 ## Two things that will surprise you
 
-**Every sprite has the same default costume.** Katnip does not import assets, so all your
-sprites are the Scratch cat until you add costumes by hand in the editor. Position, size
-and colour are all you have to tell them apart. Plan visuals accordingly, or add costumes
-after building.
+**Every sprite starts as the same cat.** A sprite with no `costume` declaration gets the
+default Scratch cat, so the projects here tell sprites apart by position, size and colour.
+When you want your own artwork, drop a file next to the `.knip` and declare it —
+`costume "./cat.svg";` — see [Costumes and sounds](/language/sprites-and-events/#costumes-and-sounds).
 
 **Some things type-check and then fail to build — and a few build and are wrong.**
 `console.log` is the failure you will hit first; it appears in older examples and does not

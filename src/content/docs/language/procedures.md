@@ -161,7 +161,7 @@ expect.
 * **Tuples**, in practice. The multi-slot frame is emitted, but a call site reads only the
   first element, and a tuple-pattern assignment — `(a, b) = f();` — is dropped entirely, so
   the call never runs. No error is reported. See
-  [Known gaps](/reference/known-gaps/#tuple-destructuring-drops-the-call).
+  [Known gaps](/reference/known-gaps/#tuple-destructuring-is-half-built).
 
 ## Recursion and proc-local variables
 

@@ -65,7 +65,7 @@ Reach it through the namespace — `math.MathOp.SQRT`. A matching literal works 
 `math.pow` was **removed** from the stdlib; `math.pow(2, 3)` is now a check error,
 *Namespace 'math' has no member 'pow'*. The `**` operator still parses and is worse — it
 lowers silently to an empty literal, so you get a wrong answer with no error at all. See
-[Known gaps](/reference/known-gaps/#-does-not-work).
+[Known gaps](/reference/known-gaps/#-is-not-lowered-yet).
 
 For a whole-number exponent, write the loop:
 

@@ -111,7 +111,7 @@ scores[2] += 1;
 stock["apple"] += 3;
 ```
 
-`**=` parses but does not work — see [Known gaps](/reference/known-gaps/#-does-not-work).
+`**=` parses but does not work — see [Known gaps](/reference/known-gaps/#-is-not-lowered-yet).
 
 ## Showing a variable on the stage
 

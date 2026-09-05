@@ -88,7 +88,6 @@ ambitious. The short version:
 * `zip`/`enumerate` work in a `for` header, but fail the build used as a plain value
 * imports build — procedures and literal constants cross, module variables do not
 * an enum slot takes a member or a matching literal, but never a computed value
-* no asset import
 
 [Feature status](/reference/feature-status/) has the full per-feature table if you want the
 complete picture.

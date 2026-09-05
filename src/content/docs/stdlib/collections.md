@@ -144,7 +144,7 @@ for (letter, greeting) { ... }
 ```
 
 There is no `split`, `replace`, `toUpper`, or `trim`. Slice syntax parses but lowers to an
-empty string — see [Known gaps](/reference/known-gaps/#slices-lower-to-an-empty-string).
+empty string — see [Known gaps](/reference/known-gaps/#slices-are-not-lowered-yet).
 Build what you need by walking characters:
 
 ```katnip

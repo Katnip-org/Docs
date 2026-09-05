@@ -54,7 +54,7 @@ matter where they were written. They are used for multi-value returns and for th
 You cannot destructure a tuple returned from a procedure yet. A call site reads only the
 first element, and a tuple-pattern assignment — `(a, b) = f();` — is dropped entirely, so
 the call never runs and both variables keep their old values. No error is reported. See
-[Known gaps](/reference/known-gaps/#tuple-destructuring-drops-the-call).
+[Known gaps](/reference/known-gaps/#tuple-destructuring-is-half-built).
 :::
 
 ## Unions
@@ -99,7 +99,7 @@ struct Point { x: num, y: num }
 
 :::danger
 Structs are fully analyzed and **not lowered**. Nothing struct-shaped survives to the
-`.sb3`. See [Known gaps](/reference/known-gaps/#structs-do-not-reach-the-sb3).
+`.sb3`. See [Known gaps](/reference/known-gaps/#structs-stop-at-the-analyzer).
 :::
 
 ## Inference

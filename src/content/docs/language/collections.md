@@ -138,7 +138,7 @@ for (letter, greeting) { ... }
 
 There is no slicing. `s[1:5:2]` parses and gets a naive type, and then lowers to an **empty
 string** — it builds, and the value is wrong. See
-[Known gaps](/reference/known-gaps/#slices-lower-to-an-empty-string).
+[Known gaps](/reference/known-gaps/#slices-are-not-lowered-yet).
 
 ## Generic helpers
 

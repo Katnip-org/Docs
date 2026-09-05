@@ -38,6 +38,7 @@ grows past a few hundred blocks, the things text has always been good at start t
 
 | You want | Blocks give you | Katnip gives you |
 | --- | --- | --- |
+| A real coding language to learn for future programming | Nothing | A solid foundation for learning a real language that is similar to real languages used in the world |
 | Types | Nada | An elaborate type system, with anything you could need |
 | Find every use of a variable | Scrolling | Ctrl+F |
 | Return values, multiple values, overrides? | Genuinely nothing | ALL of it |

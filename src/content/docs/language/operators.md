@@ -126,7 +126,7 @@ private turns: num = math.pi * 2;      # 3.141592653589793 * 2
 `range()` in a `for` header is folded into the loop counter, with constant folding on
 literal `start` / `stop` / `step`. It is never built as a list. Outside a `for` header it
 silently produces an empty list — see
-[Known gaps](/reference/known-gaps/#range-as-a-value-builds-an-empty-list).
+[Known gaps](/reference/known-gaps/#range-only-works-in-a-for-header).
 
 ## Precedence
 

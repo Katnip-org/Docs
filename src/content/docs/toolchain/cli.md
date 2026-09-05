@@ -25,7 +25,8 @@ katnip build game.knip              # writes game.sb3
 katnip build game.knip dist/g.sb3
 ```
 
-Runs the whole pipeline, so it type-checks too. On any error it prints the diagnostics and
+Imports, costumes and sounds are resolved relative to the source file, and declared assets
+are packed into the `.sb3`. Runs the whole pipeline, so it type-checks too. On any error it prints the diagnostics and
 exits non-zero without writing a file — a build either produces a project that loads, or
 produces nothing.
 

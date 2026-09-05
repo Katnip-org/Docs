@@ -23,18 +23,65 @@ sprite Cat {
 }
 ```
 
-A sprite body holds three kinds of thing:
+A sprite body holds four kinds of thing:
 
+* **costumes and sounds** — asset files packed into the project, see below
 * **variables** — sprite-owned, see [Variables](/language/variables/)
 * **procs** — custom blocks available only to this sprite
 * **event handlers** — the scripts
 
 Each sprite becomes one target in the `.sb3`, plus the stage.
 
-:::note
-There is no `stage { }` declaration. Stage state is whatever you declare at the top level
-of the file.
-:::
+## The stage
+
+A `stage { }` block holds the same things a sprite body does, and its contents land on the
+stage target instead of a sprite. Use it for backdrops and for scripts that belong to no
+sprite:
+
+```katnip
+stage {
+    costume "./assets/sky.svg";
+
+    events.onFlag() {
+        looks.switchBackdrop("sky");
+    }
+}
+```
+
+There is no name after `stage`, and a sprite cannot be called `stage` — `sprite stage { }`
+is a parse error. Top-level `public` variables live on the stage too; the block is only
+needed when the stage has assets or scripts.
+
+## Costumes and sounds
+
+`costume` and `sound` declarations pull a file into the project, the same way `import`
+pulls in a module:
+
+```katnip
+sprite Cat {
+    costume "./assets/cat.svg" as idle;
+    costume "./assets/cat-blink.svg" as blink;
+    sound "./assets/meow.wav";
+
+    events.onFlag() {
+        looks.switchCostume("idle");
+        looks.nextCostume();
+    }
+}
+```
+
+* The path is relative to the `.knip` file, quoted, and ends with a semicolon.
+* `as name` sets the costume or sound name Scratch sees. Without it, the name is the file
+  stem — `sound "./assets/meow.wav";` is a sound called `meow`.
+* Declarations go at the sprite's top level, next to variables and procs; the first one
+  declared is the costume the sprite starts on.
+* Costumes accept `svg`, `png`, `jpg`, `jpeg`, `bmp` and `gif`; sounds accept `wav` and
+  `mp3`. Anything else is a type error on the path.
+* A file that does not exist is reported against the path, like an unresolvable import,
+  and the build produces nothing.
+* The same file used by several sprites is packed into the `.sb3` once and shared.
+
+A sprite that declares no costumes keeps the default cat; declaring one replaces it.
 
 ## Event handlers
 
@@ -171,11 +218,6 @@ sprite Cat {
   events.onFlag() {
       motion.goTo(0, 0);
       looks.show();
-      looks.switchCostume("costume1");
+      looks.switchCostume("idle");
   }
   ```
-
-* **Costumes, backdrops and sounds.** Every sprite gets the same default costume and
-  there is no asset import. You can switch costumes by name, but the costumes have to
-  already exist — which means editing the project after building. See
-  [Known gaps](/reference/known-gaps/#no-asset-import).

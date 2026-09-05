@@ -34,7 +34,7 @@ looks.backdrop(mode: NumberName = NUMBER) -> any         ✅
 ```
 
 ```katnip
-looks.switchCostume("costume1");
+looks.switchCostume("idle");
 looks.nextCostume();
 looks.switchBackdrop("next backdrop");
 
@@ -47,9 +47,10 @@ backdrop name. That menu also lists backdrop names, so it keeps its `| str` arm 
 computed name.
 
 :::caution
-Katnip does not import assets. Every sprite gets the same default costume, so a name you
-switch to has to be added by hand after building. See
-[Known gaps](/reference/known-gaps/#no-asset-import).
+A costume or backdrop name has to exist on the target. Declare it with
+`costume "./file.svg" as name;` in the sprite (or in `stage { }` for a backdrop) — see
+[Costumes and sounds](/language/sprites-and-events/#costumes-and-sounds). A sprite with no
+declarations only has the default `costume1`.
 :::
 
 ## Size

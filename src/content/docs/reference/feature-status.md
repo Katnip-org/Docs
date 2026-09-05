@@ -11,9 +11,10 @@ Status of every language and toolchain feature, tracked against the compiler pip
 | 🟡 | Partial; implemented at some stages, named per row |
 | 🔴 | Not implemented, or implemented only far enough to type-check |
 
-Last verified against `main` (compiler `0.1.16`, VS Code extension `0.0.16`) with a green
-`node --test` run — 196 cases, 189 passing and 7 `todo` cases pinning the gaps below, one of
-which (imports) now passes — and a clean `katnip build examples/all.knip`.
+Last verified against `main` (compiler `0.1.18`, VS Code extension `0.0.18`) with a green
+`node --test` run — 199 cases, 192 passing and 7 `todo` cases pinning the gaps below, one of
+which (imports) now passes — and a clean `katnip build` of `examples/all.knip` and
+`examples/assets.knip`.
 
 :::note
 This page mirrors `features.md` in the compiler repository. For the practical "what do I
@@ -89,8 +90,11 @@ write instead" version, see [Known gaps](/reference/known-gaps/).
     undefined.
 * 🟢 **Access control across files** — only `public` symbols cross a file boundary; imports
   are not re-exported.
-* 🔴 **Stage block** — no `stage { ... }` declaration; stage state is implied by top-level
-  variables.
+* 🟢 **Stage block** — `stage { ... }` fills in the stage target: costumes, variables, procs
+  and handlers all land on the stage. `sprite stage { }` is a parse error.
+* 🟢 **Asset declarations** — `costume "./file.svg" as name;` and `sound "./file.wav";` at a
+  sprite's top level. The name defaults to the file stem; the extension is checked against
+  Scratch's costume and sound formats; a missing file is reported against its path.
 
 ## Statements and control flow
 
@@ -178,7 +182,7 @@ write instead" version, see [Known gaps](/reference/known-gaps/).
 * ⛔ **Tuple returns** — the multi-slot frame is emitted, but a call site only reads the
   first element, and a tuple-pattern assignment — `(a, b) = f();` — is skipped entirely, so
   the call never happens. Silently wrong; see
-  [Known gaps](/reference/known-gaps/#tuple-destructuring-drops-the-call).
+  [Known gaps](/reference/known-gaps/#tuple-destructuring-is-half-built).
 * 🔴 **List and dict returns** — explicitly rejected by the analyzer, since the frame width
   is not statically known.
 * 🔴 **`@lower = "yields"` procs** — declared in the stdlib (`list.remove`,
@@ -287,10 +291,11 @@ Every enum-typed parameter above is reachable two ways: the namespaced member
   registered on the stage.
 * 🟢 **Extension declaration** — opcode prefixes are detected and added to the project's
   extension list; `pen` is the only one with stdlib bindings today.
-* 🟢 **Packing** — `fflate` zips `project.json` plus the default costume into a `.sb3` that
-  loads in Scratch and MistWarp.
-* 🔴 **Assets** — every sprite gets the same default costume; no costume, backdrop, or sound
-  import.
+* 🟢 **Packing** — `fflate` zips `project.json`, the default costume and every declared
+  asset into a `.sb3` that loads in Scratch and MistWarp.
+* 🟢 **Assets** — declared costumes and sounds are keyed by md5, so one file used from
+  several sprites lands in the zip once. Rotation centres and sample rates are left for
+  Scratch to compute on load. A sprite with no `costume` keeps the default cat.
 * 🔴 **Monitor layout** — monitors can be shown and hidden, but not positioned or styled.
 * 🔴 **Comments in output** — nothing is written to the sb3 comment map.
 

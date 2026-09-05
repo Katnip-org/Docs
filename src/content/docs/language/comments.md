@@ -46,7 +46,7 @@ Only the *ignored* forms currently do what they say. Expanded and collapsed comm
 lexed into tokens, but the parser discards them, so **no comment reaches the `.sb3`**
 today. Use whichever form reads best in your editor; the distinction is forward-looking.
 
-See [Known gaps](/reference/known-gaps/#comments-never-reach-the-sb3).
+See [Known gaps](/reference/known-gaps/#comments-stay-in-the-source).
 :::
 
 ## Conventions in the standard library

@@ -271,8 +271,8 @@ sprite Scoreboard {
 
 :::note
 Both sprites are the default cat costume, so the Scoreboard is a second cat at the top of
-the stage. Open the `.sb3` in the Scratch editor and give it a blank costume if that
-bothers you — Katnip has no asset import yet.
+the stage. Give it its own artwork with a `costume "./blank.svg";` line at the top of the
+sprite — see [Costumes and sounds](/language/sprites-and-events/#costumes-and-sounds).
 :::
 
 ## Try it yourself

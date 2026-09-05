@@ -71,8 +71,9 @@ lists on the correct target, custom-block prototypes with proccodes and argument
 shadow primitives for every input slot, broadcast primitives on the stage, and the
 extension list.
 
-Then [fflate](https://github.com/101arrowz/fflate) zips `project.json` and the default
-costume into a `.sb3`.
+Then [fflate](https://github.com/101arrowz/fflate) zips `project.json`, the default
+costume and every declared costume and sound into a `.sb3`. Assets are named by md5, so a
+file shared between sprites is stored once.
 
 If an opcode reaches this stage without slot metadata — which is how the unimplemented
 `katnip_*` builtins fail — codegen throws rather than emitting a broken project. A build

@@ -23,8 +23,14 @@ proc double(n: num) -> num {
     return n * 2;
 }
 
-# 5. sprites — everything that actually runs
+# 5. the stage — backdrops and stage scripts, if any
+stage {
+    costume "./assets/sky.svg";
+}
+
+# 6. sprites — everything that actually runs
 sprite Cat {
+    costume "./assets/cat.svg";      # an asset packed into the project
     private lives: num = 9;          # a sprite-local variable
 
     proc pounce() -> void {          # a sprite-local procedure
@@ -45,8 +51,8 @@ can call one declared below it and a sprite can read a global declared after it.
 
 | Level | What can go here | Becomes |
 | --- | --- | --- |
-| **Top level** | imports, enums, structs, variables, procs, sprites | Stage-owned state and shared blocks |
-| **Sprite body** | variables, procs, event handlers | Sprite-owned state and scripts |
+| **Top level** | imports, enums, structs, variables, procs, sprites, the stage | Stage-owned state and shared blocks |
+| **Sprite or stage body** | costumes, sounds, variables, procs, event handlers | Target-owned assets, state and scripts |
 | **Handler / proc body** | statements | Blocks in a script stack |
 
 A statement at the top level with nowhere to go is silently dropped by the IR — this is a
