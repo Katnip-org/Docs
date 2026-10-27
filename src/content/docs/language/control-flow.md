@@ -165,6 +165,13 @@ switch (side) {            # side: Team
 * **There is no exhaustiveness check.** A `switch` over an enum that misses a member
   compiles without complaint. Add a `default`.
 
+`case` and `default` are reserved words. They can only start a block inside a `switch`, and
+you cannot use them as the name of a variable, parameter or procedure:
+
+```katnip
+private default = 1;    # error: 'default' is a reserved word
+```
+
 ## return
 
 ```katnip

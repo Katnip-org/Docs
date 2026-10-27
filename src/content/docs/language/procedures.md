@@ -47,7 +47,37 @@ Arguments can be routed by name instead of position:
 motion.goTo(y = 0, x = 0);
 ```
 
-Handy when a call has several `num` parameters and the order is not obvious.
+Handy when a call has several `num` parameters and the order is not obvious. Naming the
+same argument twice is an error.
+
+A trailing comma after the last argument is allowed:
+
+```katnip
+motion.goTo(
+    x = 0,
+    y = 0,
+);
+```
+
+## Parameters are read-only
+
+A parameter becomes a Scratch input, and Scratch inputs cannot be changed. Assigning to one
+is an error:
+
+```katnip
+proc countdown(n: num) -> void {
+    n -= 1;    # error: Cannot assign to parameter 'n'
+}
+```
+
+Copy it into a variable first if you need to change it:
+
+```katnip
+proc countdown(n: num) -> void {
+    private left: num = n;
+    left -= 1;
+}
+```
 
 ## Overloading
 
@@ -64,6 +94,14 @@ looks.say("hi", 2);
 
 This is how the standard library offers `motion.goTo(x, y)` and `motion.goTo(target)` under
 one name.
+
+The parameter **types** have to differ. Two overloads with the same types are a
+redeclaration, even when the parameter names are different:
+
+```katnip
+proc move(steps: num) -> void { ... }
+proc move(distance: num) -> void { ... }   # error: 'move' is already declared in this scope with the same parameter types
+```
 
 ## Methods
 

@@ -12,6 +12,15 @@ public names: list<str> = ["Ember", "Splash"];
 public empty: list<num> = [];
 ```
 
+A trailing comma after the last element is allowed, in list and dict literals alike:
+
+```katnip
+public names: list<str> = [
+    "Ember",
+    "Splash",
+];
+```
+
 ### Indexing
 
 Scratch lists are **1-indexed**, and so are Katnip's.

@@ -147,6 +147,12 @@ motion.setRotationStyle(motion.RotationStyle.LEFT_RIGHT);   # ✅
 looks.setEffect(looks.GraphicEffect.GHOST, 50);             # ✅
 ```
 
+A namespaced enum can be used as a type annotation the same way:
+
+```katnip
+private effect: looks.GraphicEffect = looks.GraphicEffect.GHOST;
+```
+
 A namespaced enum stays **out of global scope** — the bare name is undefined:
 
 ```katnip

@@ -22,12 +22,13 @@ private total: num = (a + b) * 2 % 10;
 | Operator | Scratch block |
 | --- | --- |
 | `==` | `operator_equals` |
+| `!=` | *built*: `not (a == b)` |
 | `<` | `operator_lt` |
 | `>` | `operator_gt` |
 | `<=` | *built* — `not (a > b)` |
 | `>=` | *built* — `not (a < b)` |
 
-Scratch has no `<=` or `>=` block. Katnip declares them in the prelude as `builds`
+Scratch has no `!=`, `<=` or `>=` block. Katnip declares them in the prelude as `builds`
 procedures and inlines the body at every use site, so `score <= 50` becomes a `not`
 wrapping a `>` — a nested reporter, not a procedure call.
 
@@ -48,6 +49,18 @@ if ((where >= 1) ^ (total <= 2)) {
     looks.say("exactly one");
 }
 ```
+
+Every logic operator needs `bool` operands, the same as `!`. Scratch would quietly treat
+`0`, `""` and `"false"` as false and everything else as true, but Katnip asks you to say
+what you mean:
+
+```katnip
+if (lives && ready) { ... }       # error, if lives is a num
+if (lives > 0 && ready) { ... }   # ✅
+```
+
+Both sides are always evaluated. There is no short-circuiting, because Scratch's `and` and
+`or` blocks evaluate both inputs.
 
 ## Boolean shape coercion
 
@@ -138,7 +151,7 @@ unary  -  !
 *  /  %
 +  -
 <  >  <=  >=
-==
+==  !=
 &&  ^  !&  !^
 ||  !|
 ```

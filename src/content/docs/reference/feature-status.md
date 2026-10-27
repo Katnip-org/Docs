@@ -74,7 +74,10 @@ write instead" version, see [Known gaps](/reference/known-gaps/).
     recursion still clobbers it.
 * 🟢 **Procedures** — `proc name(params) -> Type { ... }`, with bodies lowered into
   `procedures_definition` blocks.
-  * 🟢 Overloading by parameter list; dispatch resolved by argument types.
+  * 🟢 Overloading by parameter list; dispatch resolved by argument types. Two overloads
+    with the same parameter types are a redeclaration error.
+  * 🟢 Parameters are read-only; assigning to one (or to a struct parameter's field) is an
+    error.
   * 🟢 Default parameter values.
   * 🟢 Named arguments — `motion.goTo(y = 0, x = 0)` routes by name, not position.
   * 🟢 Methods — a first parameter named `self` makes the proc callable as
@@ -133,9 +136,9 @@ write instead" version, see [Known gaps](/reference/known-gaps/).
 ## Expressions and operators
 
 * 🟢 **Arithmetic** — `+`, `-`, `*`, `/`, `%`, and unary `-`.
-* 🟢 **Comparison** — `==`, `<`, `>`.
-* 🟢 **Logic** — `&&`, `||`, and unary `!`.
-* 🟢 **Composed operators** — `<=`, `>=`, `^`, `!&`, `!|`, `!^` have no Scratch block, so
+* 🟢 **Comparison** — `==`, `!=`, `<`, `>`.
+* 🟢 **Logic** — `&&`, `||`, and unary `!`, all requiring `bool` operands.
+* 🟢 **Composed operators** — `!=`, `<=`, `>=`, `^`, `!&`, `!|`, `!^` have no Scratch block, so
   they come from `@lower = "builds"` stdlib procs inlined as nested reporters at each use
   site.
 * 🟢 **Boolean shape coercion** — round reporters entering a hexagonal slot are wrapped
