@@ -83,7 +83,7 @@ ambitious. The short version:
 
 * four things build and are **silently wrong**: `**`, slices, `range()` used as a value,
   and tuple-pattern assignment
-* structs do not reach the `.sb3`
+* a struct works through its fields; a whole struct can't be printed or compared
 * `console.*`, `typeof`, `list.merge`, and every dict method fail the build
 * `zip`/`enumerate` work in a `for` header, but fail the build used as a plain value
 * imports build — procedures and literal constants cross, module variables do not

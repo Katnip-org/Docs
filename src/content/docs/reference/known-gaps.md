@@ -16,7 +16,7 @@ and you will not be surprised later.
 | --- | --- | --- |
 | 🔴 **Build error** | `check` passes, `build` fails loudly | `console.*`, `typeof`, dict methods, `list.merge` |
 | 🔴 **Check error** | `check` refuses it, with a message | a computed value in an enum slot |
-| 🟠 **Silent no-op** | builds, but the code is missing from the `.sb3` | structs, top-level statements |
+| 🟠 **Silent no-op** | builds, but the code is missing from the `.sb3` | top-level statements |
 | ⛔ **Silently wrong** | builds and runs, with a wrong answer | `**`, slices, `range()` as a value, tuple destructuring |
 
 The last row is the one worth memorising. It is four items, listed first so you can check
@@ -219,18 +219,27 @@ proc bounds() -> void { lo = 1; hi = 10; }
 
 ---
 
-### Structs stop at the analyzer
+### Struct limits
 
-🟠 Structs are fully analyzed — construction, defaults, missing and unknown fields, field
-types, struct-typed parameters and returns, struct lists with per-field columns. The IR
-does not lower struct literals, field reads or field writes yet, so the build succeeds and
-the struct code is left out.
+🔴 Structs compile to one Scratch variable (or list) per field, so a struct only works
+through its fields.
 
-**Instead:** parallel lists.
+These fail the build:
+
+* a whole struct inside an interpolated string: `f"{p}"`
+* `contains`, `indexOf`, `remove` and `merge` on a `list<Struct>`
+
+These are check errors:
+
+* passing a whole struct where a scalar is expected: `looks.say(p)`
+* comparing structs: `p == q`
+* constructing a struct declared in an imported module: `geo.Point(x = 1, y = 2)`
+
+**Instead:** work field by field.
 
 ```katnip
-public point_x: list<num> = [];
-public point_y: list<num> = [];
+if (p.x == q.x && p.y == q.y) { ... }
+looks.say(f"{p.x}, {p.y}");
 ```
 
 ---

@@ -97,10 +97,8 @@ Nominal record types with named fields:
 struct Point { x: num, y: num }
 ```
 
-:::danger
-Structs are fully analyzed and **not lowered**. Nothing struct-shaped survives to the
-`.sb3`. See [Known gaps](/reference/known-gaps/#structs-stop-at-the-analyzer).
-:::
+Each field becomes its own Scratch variable, and a `list<Point>` becomes one list per field.
+See [Enums and structs](/language/enums-and-structs/#structs).
 
 ## Inference
 

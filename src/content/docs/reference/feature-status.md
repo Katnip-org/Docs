@@ -34,8 +34,7 @@ write instead" version, see [Known gaps](/reference/known-gaps/).
   error nodes so analysis still runs.
 * 🟢 **Semantic analyzer** — two-pass (hoist, then walk), scoped symbol table, structured
   `InternalType` with unions, tuples, generics.
-* 🟡 **IR generator** — lowers everything Scratch-shaped, with named gaps below (structs,
-  slices, `**`, tuple destructuring, `katnip_*` builtins).
+* 🟡 **IR generator** — lowers everything Scratch-shaped, with named gaps below (slices, `**`, tuple destructuring, `katnip_*` builtins).
 * 🟡 **SB3 codegen** — emits blocks, variables, lists, procs, extensions, packs to `.sb3`;
   throws on any opcode missing slot metadata.
 
@@ -60,7 +59,7 @@ write instead" version, see [Known gaps](/reference/known-gaps/).
   declarations with an initializer.
 * 🟢 **Generic stdlib typevars** — `T`, `K`, `V` bind from receivers and arguments, so
   `zip`/`enumerate`/`list.contains` return concrete types.
-* 🟡 **Structs** — nominal record types; fully analyzed, not lowered.
+* 🟢 **Structs** — nominal record types, lowered to one column per field.
 
 ## Declarations
 
@@ -227,8 +226,12 @@ write instead" version, see [Known gaps](/reference/known-gaps/).
 * 🟢 Analyzed — literal construction with defaults filled, missing and unknown fields
   reported, field reads and writes type-checked, struct-typed params and returns, struct
   lists with per-field column access, non-scalar fields and duplicate fields rejected.
-* 🔴 Lowered — struct literals, field reads, and field writes all no-op in the IR. Nothing
-  struct-shaped survives to sb3.
+* 🟢 Lowered — one variable per field for a lone struct, one parallel list per field for a
+  `list<Struct>`. Literals, field reads and writes, whole-struct assignment, element reads
+  and writes, `add`/`length`/`clear`/`show`/`hide`, `for` over a struct list, struct params
+  (one input per field) and struct returns (one slot per field).
+* 🔴 A whole struct as one value, `contains`/`indexOf`/`remove`/`merge` on a struct list, and
+  structs from imported modules fail the build.
 
 ## Standard library
 
@@ -334,7 +337,6 @@ Every enum-typed parameter above is reachable two ways: the namespaced member
    assignment — since each builds a project that runs and lies.
 2. Give the remaining `katnip_*` builtins real lowerings; `console`, `typeof`, `list.merge`
    and the dict methods are the widest hole.
-3. Lower structs; the analyzer is already complete for them.
-4. Lower imported module variables and lists, so a module can own state.
-5. Lower `@lower = "yields"` procs, unblocking `list.remove` and `console.input`.
-6. Attach comments to the AST and emit them into the sb3 comment map.
+3. Lower imported module variables and lists, so a module can own state.
+4. Lower `@lower = "yields"` procs, unblocking `list.remove` and `console.input`.
+5. Attach comments to the AST and emit them into the sb3 comment map.

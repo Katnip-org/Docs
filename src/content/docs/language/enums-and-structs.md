@@ -187,38 +187,92 @@ private c: Cfg   = Cfg(a = 5);            # b = 2
 
 ### Field access
 
+Read and write a field with `.`. Compound assignment works on fields too:
+
 ```katnip
 private a: num = p.x;
 p.x = 10;
+p.y += 1;
+```
+
+### Assigning a whole struct
+
+A struct variable takes another struct, a literal, or a call that returns one. Every field
+is copied:
+
+```katnip
+private q: Point = p;
+q = Point(x = q.y, y = q.x);    # swaps safely; the old values are read first
 ```
 
 ### Struct lists and field columns
 
-A `list<Point>` supports both element access and whole-column access:
+A `list<Point>` supports element access, element writes and whole-column access:
 
 ```katnip
-private ps: list<Point> = [];
+private ps: list<Point> = [Point(x = 1, y = 2), Point(x = 3, y = 4)];
+
 private one: num = ps[1].x;        # one element's field
+ps[1].y = 5;                       # write one element's field
+ps[2] = Point(x = 0, y = 0);       # replace a whole element
 private col: list<num> = ps.x;     # every element's x, as a list
 ```
 
+These list methods work on a struct list:
+
+```katnip
+ps.add(Point(x = 9, y = 9));
+ps.length();
+ps.clear();
+ps.show();
+ps.hide();
+```
+
+A `for` loop over a struct list gives you one element at a time:
+
+```katnip
+for (p, ps) {
+    looks.say(f"{p.x}, {p.y}");
+}
+```
+
+### Struct parameters and returns
+
+Structs can be passed into procedures and returned from them:
+
+```katnip
+proc shift(p: Point, by: num) -> Point {
+    return Point(x = p.x + by, y = p.y);
+}
+
+private moved: Point = shift(p, 5);
+```
+
+A struct parameter is read-only, like every parameter: `p.x = 1` inside `shift` is an error.
+
 ### Rules
 
-* Fields must be **scalar** — `list<num>` as a field is rejected.
+* Fields must be **scalar** (`num`, `str`, `bool`, or an enum). `list<num>` as a field is rejected.
 * Duplicate field names are rejected.
 * A field default must match the field's type.
 * Missing required fields and unknown fields are reported at construction.
-* Struct-typed parameters and return types are allowed.
 
-:::danger
-**Structs do not reach the `.sb3`.** The analyzer is complete for them — every rule above
-is enforced — but the IR no-ops struct literals, field reads and field writes. A build
-containing structs produces a project with the struct code missing.
+### How structs compile
 
-Until lowering lands, model records as parallel lists:
+Scratch has no records, so each field gets its own column:
 
-```katnip
-public point_x: list<num> = [];
-public point_y: list<num> = [];
-```
+| Katnip | In the `.sb3` |
+| --- | --- |
+| `p: Point` | one variable per field: `p_x`, `p_y` |
+| `ps: list<Point>` | one list per field, kept in step: `ps_x`, `ps_y` |
+| `a: Point` parameter | one input per field: `a_x`, `a_y` |
+| `-> Point` return | one return slot per field |
+
+That is why the variable names you see in the Scratch editor end in `_x` and `_y`.
+
+:::caution
+A struct has no single value, so it can only be used through its fields. `looks.say(p)`,
+`f"{p}"`, `p == q`, and `list.contains`, `indexOf`, `remove` or `merge` on a struct list are
+not supported. Compare or print the fields instead. See
+[Known gaps](/reference/known-gaps/#struct-limits).
 :::
