@@ -44,6 +44,27 @@ The body is duplicated in the output. For a large body, that doubles the block c
 Prefer `while` when the first iteration does not need to be unconditional.
 :::
 
+## forever
+
+```katnip
+forever {
+    motion.setX(sensing.mouseX());
+}
+```
+
+Lowers to `control_forever`. Anything after the loop in the same script never runs.
+
+## repeat
+
+```katnip
+repeat (4) {
+    motion.forward(10);
+}
+```
+
+Lowers to `control_repeat`. The count must be a `num`, and Scratch reads it once, when the loop
+starts. Use `repeat` when you do not need a counter, and `for` when you do.
+
 ## for
 
 Katnip's `for` takes a binding and something to walk. There are seven things it can walk.
@@ -203,12 +224,5 @@ stop(StopType.OTHER_SCRIPTS_IN_SPRITE);
 
 ## What is missing
 
-`forever` and `repeat` have IR nodes and codegen, but **no source syntax reaches them**.
-Write the equivalent:
-
-```katnip
-while (true) { ... }      # forever
-for (i, 10) { ... }       # repeat 10
-```
-
-`break` and `continue` do not exist.
+`break` and `continue` do not exist. Using either is reported as an undefined name. To leave
+a loop early, put the condition in a `while`, or `return` from a procedure.

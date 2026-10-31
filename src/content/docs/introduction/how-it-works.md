@@ -39,7 +39,11 @@ not hide every type error below it. You get the whole list in one run.
 
 ## Semantic analyzer
 
-Two passes over the AST:
+Just before this stage, every `import("./file.csv")` or `import("./file.json")` expression
+is read and swapped for the equivalent list or dict literal, so the analyzer and everything
+after it only ever see a normal literal.
+
+Then two passes over the AST:
 
 1. **Hoist** — every declaration is registered before any body is walked, so procedures
    can call each other in any order and a sprite can use a global declared below it.
@@ -95,4 +99,5 @@ katnip lower    hello.knip ir.json
 katnip build    hello.knip
 ```
 
-Details in [CLI](/toolchain/cli/).
+`katnip decompile` runs the other way, from a `.sb3` back to `.knip` source. Details in
+[CLI](/toolchain/cli/).

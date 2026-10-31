@@ -108,7 +108,12 @@ An annotation is optional whenever there is an initializer to infer from:
 private count = 3;              # num
 private name = "Katnip";        # str
 private scores = [3, 1, 4];     # list<num>
+private mixed = [1, "a"];       # a list of a union
+private info = {"a": "x", "b": 1};   # dict<str, str | num>
 ```
+
+Mixed elements infer a union. To accept one in an annotation, write the union:
+`dict<str, str | num>`. A narrower `dict<str, str>` rejects the literal above.
 
 Annotate when you want the compiler to hold you to something:
 

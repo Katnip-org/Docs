@@ -45,9 +45,9 @@ proc tally() -> void {
 
 ### Working around `remove`
 
-`remove` is declared `@lower = "yields"` — it both mutates and returns, which the IR has no
-lowering for. It does not report that cleanly either: the build crashes with an internal
-`TypeError: Cannot read properties of undefined (reading 'mangled')`. Rebuild instead:
+`remove` is declared `@lower = "yields"`. It both mutates and returns, which the IR has no
+lowering for, so the build fails with `@lower = "yields" procs are not lowered yet`. Rebuild
+instead:
 
 ```katnip
 public scores: list<num> = [];
@@ -78,7 +78,9 @@ for (item, other) {
 
 :::danger
 **Every dict method is unimplemented.** All five resolve to `katnip_*` opcodes with no
-codegen metadata; they type-check and then fail the build.
+codegen metadata. `contains`, `length` and `merge` type-check and then fail the build.
+`keys` and `values` are worse when assigned to a list: `private k = stock.keys();` builds
+and leaves `k` **empty**.
 :::
 
 ```katnip

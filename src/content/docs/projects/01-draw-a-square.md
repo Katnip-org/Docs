@@ -89,9 +89,10 @@ Four identical pairs of lines is exactly what a loop is for:
 ```
 
 `for (side, 4)` runs the body four times with `side` counting 1, 2, 3, 4. It compiles to
-Scratch's own counted loop, `repeat (4)`.
+Scratch's own counted loop, `for each`.
 
-You are not using `side` yet. That is fine — the binding is required, using it is not.
+You are not using `side` yet. That is fine, since the binding is required but using it is
+not. When you never need a counter, `repeat (4) { ... }` does the same job.
 
 ## Step 4 — Make it a procedure
 

@@ -12,6 +12,11 @@ public names: list<str> = ["Ember", "Splash"];
 public empty: list<num> = [];
 ```
 
+:::caution
+Put a space before the `=`. The lexer reads `>=` as one operator, so `list<num>= [1]` is a
+parse error, `Expected ',' or '>'`. The same goes for `dict<K, V>`.
+:::
+
 A trailing comma after the last element is allowed, in list and dict literals alike:
 
 ```katnip
@@ -48,8 +53,8 @@ today; codegen looks for a variable named `list`. Use the receiver form.
 
 :::caution
 `scores.remove(i)` and `scores.merge(other)` are declared but **not lowered** — `merge`
-fails with `no slot metadata`, and `remove` crashes the IR. To delete an element, rebuild
-the list; see [Known gaps](/reference/known-gaps/).
+fails with `no slot metadata`, and `remove` with `@lower = "yields" procs are not lowered
+yet`. To delete an element, rebuild the list; see [Known gaps](/reference/known-gaps/).
 :::
 
 ### Iterating
@@ -93,7 +98,8 @@ The `(name, count)` tuple pattern walks both columns together.
 
 :::danger
 `dict.contains`, `dict.length`, `dict.keys`, `dict.values` and `dict.merge` all resolve to
-`katnip_*` opcodes that **have no codegen** yet. They type-check and then fail the build.
+`katnip_*` opcodes that **have no codegen** yet. They type-check and then fail the build,
+except that assigning `keys()` or `values()` to a list builds and leaves it **empty**.
 
 What works today: literals, `d[key]` reads, `d[key] = v` writes, and dict `for` loops.
 :::
@@ -134,6 +140,31 @@ public roster: list<num> = [1, double(4), 9];
 That distinction matters when another green-flag script reads the list — Scratch does not
 order concurrent scripts for you. If you depend on it, broadcast after the rebuild rather
 than racing it.
+
+## Loading a list or dict from a file
+
+`import("./file")` with a `.csv` or `.json` path reads the file at compile time and acts as
+if you had typed the literal yourself. The path is relative to the source file, and a missing
+or malformed file is an error reported at the path.
+
+```katnip
+private levels: list<num> = import("./levels.csv");
+private scores: dict<str, num> = import("./scores.json");
+private names = import("./names.csv");
+```
+
+| File | Must be | Becomes |
+| --- | --- | --- |
+| `.csv` | a single row or a single column | a list |
+| `.json` | a flat array | a list |
+| `.json` | a flat object | a dict |
+
+JSON values must be strings, numbers or booleans, so a nested array or object is an error, and
+so is a CSV grid. CSV cells that look like numbers become numbers, quoted cells keep their
+whitespace, and blank lines are skipped.
+
+Data files are separate from the module form, `import "./lib.knip";`, which has no parentheses.
+Data can be loaded in an imported module too; the path is then relative to that module.
 
 ## Strings behave like sequences
 

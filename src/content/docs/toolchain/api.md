@@ -2,16 +2,23 @@
 title: "Embedding the compiler"
 ---
 
-The compiler is a normal ES module. Three functions are exported, plus the error type and two
-resolver hooks — enough to build a browser playground, a different editor integration, or a
-build step.
+The compiler is a normal ES module. It exports three compile functions, two decompile
+functions, the error type and two resolver hooks, which is enough to build a browser
+playground, a different editor integration, or a build step.
 
 ```bash
 npm install @katnip-org/compiler
 ```
 
 ```js
-import { checkSource, compileToIR, compileToSb3, KatnipError } from "@katnip-org/compiler";
+import {
+    checkSource,
+    compileToIR,
+    compileToSb3,
+    decompileProject,
+    decompileSb3,
+    KatnipError,
+} from "@katnip-org/compiler";
 ```
 
 Requires Node 20+. The package is ESM-only.
@@ -22,12 +29,12 @@ Requires Node 20+. The package is ESM-only.
 checkSource(source: string, options?: Options): readonly KatnipError[]
 ```
 
-Lex, parse, analyze. Returns the diagnostics; an empty array means clean.
+Lex, parse, analyze. Returns the diagnostics, warnings included; an empty array means clean.
 
 ```js
 const errors = checkSource(source);
 for (const e of errors) {
-    console.log(`${e.message} at ${e.location.line}:${e.location.column}`);
+    console.log(`${e.severity}: ${e.message} at ${e.location?.line}:${e.location?.column}`);
 }
 ```
 
@@ -37,7 +44,8 @@ for (const e of errors) {
 compileToSb3(source: string, options?: Options): { errors: readonly KatnipError[]; sb3?: Uint8Array }
 ```
 
-The whole pipeline. `sb3` is present only when `errors` is empty.
+The whole pipeline. `sb3` is absent when `errors` holds anything of severity `"error"`;
+warnings do not stop a build.
 
 ```js
 import { writeFile } from "node:fs/promises";
@@ -76,15 +84,16 @@ JSON.stringify(ir, (_, v) => v instanceof Map ? Object.fromEntries(v) : v, 2);
 interface Options {
     path?: string;              // the entry file's path, for resolving relative imports and assets
     resolve?: ImportResolver;   // how to fetch an imported file
-    readAsset?: AssetReader;    // how to fetch a costume or sound file
+    readAsset?: AssetReader;    // how to fetch a costume, sound or data file
+    compression?: number;       // zip deflate level 0-9, default 6 (compileToSb3 only)
 }
 ```
 
 Imports are only followed when you supply a `resolve`. Without it, the entry file is
 compiled alone.
 
-Assets are only found when you supply a `readAsset`. Without it, every `costume` and
-`sound` declaration is reported as a missing file — a clearer failure than silently
+Assets are only found when you supply a `readAsset`. Without it, every `costume`, `sound`
+and `import("./data.csv")` is reported as a missing file, a clearer failure than silently
 shipping the default costume.
 
 ## Import resolvers
@@ -165,12 +174,31 @@ const fileAssetReader = (specifier, fromPath) => {
 
 For a virtual filesystem, key a map by resolved path and return `files[resolved] ?? null`.
 
+## Decompiling
+
+```ts
+decompileSb3(sb3: Uint8Array): string
+decompileProject(project: Sb3Project): string
+```
+
+`decompileSb3` takes the `.sb3` bytes and returns `.knip` source, and throws if the zip has no
+`project.json`. `decompileProject` does the same from an already-parsed `project.json`. The
+limits are listed under [`katnip decompile`](/toolchain/cli/#decompile).
+
 ## Errors
 
 ```ts
-class KatnipError {
+class KatnipError extends Error {
+    source: string;                  // the stage, e.g. "Parser" or "Asset"
     message: string;
-    location: { line: number; column: number };
+    severity: "error" | "warning";
+    location?: {                     // absent for IR and codegen errors
+        line: number;
+        column: number;
+        length?: number;
+        endLine?: number;
+        endColumn?: number;
+    };
 }
 ```
 

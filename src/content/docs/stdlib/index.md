@@ -27,7 +27,7 @@ any call becomes.
 | [list](/stdlib/collections/#list) | list methods | 🟡 |
 | [dict](/stdlib/collections/#dict) | dict methods | 🔴 |
 | [str](/stdlib/collections/#str) | string methods | 🟡 |
-| [math](/stdlib/math-console/#math) | constants, and `operator_mathop` wrapped per operation | 🟢 |
+| [math](/stdlib/math-console/#math) | constants, `random`, `round`, `mod`, and `operator_mathop` wrapped per operation | 🟢 |
 | [console](/stdlib/math-console/#console) | `log`, `warn`, `error`, `input` | 🔴 |
 
 🟢 reaches real Scratch blocks · 🟡 partly · 🔴 type-checks but fails the build

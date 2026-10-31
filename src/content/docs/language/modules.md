@@ -7,7 +7,7 @@ title: "Modules and imports"
 including the procedures it calls in turn, and an imported literal constant folds at the
 call site.
 
-The one thing that does not cross is **mutable module state** — see
+The one thing that does not cross is **mutable module state**. See
 [What crosses a file boundary](#what-crosses-a-file-boundary).
 :::
 
@@ -58,17 +58,16 @@ private b: num = lib.secret;       # error: 'secret' is private
 
 ## What crosses a file boundary
 
-A `public` **procedure** and a `public` **constant with a literal initializer** cross and
-build. A `public` **variable or list** does not:
+A `public` **procedure** and a `public` **value with a literal initializer** cross and build.
+The value is copied at compile time, so it behaves as a constant. A `public` **list** does not
+cross, and neither does any change to a value:
 
 ```katnip
 # lib.knip
-public SIDES: num = 3;                  # literal — crosses, folds at the call site
-public counter: num = 0;                # variable — does not cross
-public shared: list<num> = [1, 2];      # list — does not cross
+public SIDES: num = 3;                  # literal: crosses, folds at the call site
+public shared: list<num> = [1, 2];      # list: does not cross
 
 public proc twice(n: num) -> num { return n * 2; }
-public proc bump() -> void { counter += 1; }
 ```
 
 ```katnip
@@ -78,12 +77,14 @@ import "./lib.knip";
 private a: num = lib.SIDES;      # ✅ folds to 3
 private b: num = lib.twice(4);   # ✅ the proc is lowered into this target
 private c: num = lib.shared[1];  # 🔴 check: only members with a literal initializer are supported
-lib.bump();                      # 🔴 build: undeclared variable 'counter'
+lib.SIDES = 4;                   # ⛔ builds, and the assignment is silently dropped
 ```
 
 An imported procedure may take parameters and return a value, but it cannot touch a
-variable or list declared in its own module — that variable is never emitted. Keep shared
-state in the entry file and pass it through parameters and returns.
+variable or list declared in its own module, because that variable is never emitted. One such
+procedure fails the build with `undeclared variable` for **any** file that imports the module,
+even if nothing calls it. Keep shared state in the entry file and pass it through parameters
+and returns.
 
 ## Imports are not re-exported
 
@@ -111,10 +112,16 @@ Each file is read and parsed exactly once, no matter how many files import it.
 Unresolvable paths and import cycles are reported against the file that did the importing,
 with a source span.
 
+## Data files
+
+`import("./levels.csv")`, with parentheses and a `.csv` or `.json` path, is an expression that
+loads data rather than a module. See
+[Loading a list or dict from a file](/language/collections/#loading-a-list-or-dict-from-a-file).
+
 ## Resolvers
 
 Import resolution is pluggable. The CLI resolves against the filesystem; the VS Code
-extension resolves against open documents so unsaved edits are picked up; an embedding can
+extension prefers open documents so unsaved edits are picked up; an embedding can
 supply virtual files, which is how a browser playground would work.
 
 If you are embedding the compiler, you pass a resolver — see

@@ -1,49 +1,28 @@
-# Starlight Starter Kit: Basics
+# Katnip docs
 
-[![Built with Starlight](https://astro.badg.es/v2/built-with-starlight/tiny.svg)](https://starlight.astro.build)
+Source for <https://docs.katnip.org>, the documentation for the
+[Katnip](https://github.com/Katnip-org/Katnip) language. Built with
+[Astro](https://astro.build) and [Starlight](https://starlight.astro.build).
 
-```
-npm create astro@latest -- --template starlight
-```
+## Commands
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+| Command | Action |
+| --- | --- |
+| `npm install` | Install dependencies |
+| `npm run dev` | Start the dev server at `localhost:4321` |
+| `npm run build` | Build the site to `./dist/` |
+| `npm run preview` | Preview the build locally |
 
-## 🚀 Project Structure
+## Layout
 
-Inside of your Astro + Starlight project, you'll see the following folders and files:
+| Path | What's in it |
+| --- | --- |
+| `src/content/docs/` | The pages; the sidebar is defined in `astro.config.mjs` |
+| `src/grammars/katnip.tmLanguage.json` | Highlighting for `katnip` code fences |
 
-```
-.
-├── public/
-├── src/
-│   ├── assets/
-│   ├── content/
-│   │   └── docs/
-│   └── content.config.ts
-├── astro.config.mjs
-├── package.json
-└── tsconfig.json
-```
+## Keeping it in sync
 
-Starlight looks for `.md` or `.mdx` files in the `src/content/docs/` directory. Each file is exposed as a route based on its file name.
-
-Images can be added to `src/assets/` and embedded in Markdown with a relative link.
-
-Static assets, like favicons, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Check out [Starlight’s docs](https://starlight.astro.build/), read [the Astro documentation](https://docs.astro.build), or jump into the [Astro Discord server](https://astro.build/chat).
+* `src/grammars/katnip.tmLanguage.json` is a copy of `packages/vscode/syntaxes/katnip.tmLanguage.json`
+  from the compiler repo. Copy it over when the grammar changes.
+* `reference/feature-status.md` mirrors `features.md` in the compiler repo.
+* `reference/known-gaps.md` is the practical version of those gaps. Update it alongside them.

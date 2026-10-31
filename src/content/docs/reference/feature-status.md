@@ -11,10 +11,10 @@ Status of every language and toolchain feature, tracked against the compiler pip
 | 🟡 | Partial; implemented at some stages, named per row |
 | 🔴 | Not implemented, or implemented only far enough to type-check |
 
-Last verified against `main` (compiler `0.1.18`, VS Code extension `0.0.18`) with a green
-`node --test` run — 199 cases, 192 passing and 7 `todo` cases pinning the gaps below, one of
-which (imports) now passes — and a clean `katnip build` of `examples/all.knip` and
-`examples/assets.knip`.
+Last verified against `main` (compiler `0.1.25`, VS Code extension `0.1.25`) with a green
+`node --test` run of 278 cases, 272 passing and 6 `todo` cases pinning the gaps below, one of
+which (imports) now passes, and a clean `katnip build` of `examples/all.knip`,
+`examples/assets.knip` and `examples/codegen.knip`.
 
 :::note
 This page mirrors `features.md` in the compiler repository. For the practical "what do I
@@ -31,7 +31,8 @@ write instead" version, see [Known gaps](/reference/known-gaps/).
     string of either quote style, or another f-string.
   * 🟢 Unterminated string literals are reported instead of running off the end of the file.
 * 🟢 **Parser** — Pratt parser with a binding-power table, recovers from syntax errors into
-  error nodes so analysis still runs.
+  error nodes so analysis still runs. Comments between tokens of a multi-line statement are
+  skipped.
 * 🟢 **Semantic analyzer** — two-pass (hoist, then walk), scoped symbol table, structured
   `InternalType` with unions, tuples, generics.
 * 🟡 **IR generator** — lowers everything Scratch-shaped, with named gaps below (slices, `**`, tuple destructuring, `katnip_*` builtins).
@@ -56,7 +57,7 @@ write instead" version, see [Known gaps](/reference/known-gaps/).
     assignable, and there is no `Enum(x)` cast to force one; the diagnostic points at the
     member form instead. See [Known gaps](/reference/known-gaps/#no-cast-to-an-enum).
 * 🟢 **Type inference** — every expression gets a type; annotations are optional on
-  declarations with an initializer.
+  declarations with an initializer. Mixed list and dict literals infer a union.
 * 🟢 **Generic stdlib typevars** — `T`, `K`, `V` bind from receivers and arguments, so
   `zip`/`enumerate`/`list.contains` return concrete types.
 * 🟢 **Structs** — nominal record types, lowered to one column per field.
@@ -130,8 +131,8 @@ write instead" version, see [Known gaps](/reference/known-gaps/).
 * 🟡 **Statement placement errors** — handlers, imports, and switch placement are checked,
   but statements the IR cannot place outside a sprite are silently dropped rather than
   reported.
-* 🟡 **`forever` / `repeat`** — IR node kinds and codegen exist, no source syntax reaches
-  them yet.
+* 🟢 **`forever`** — lowers to `control_forever`.
+* 🟢 **`repeat`** — lowers to `control_repeat`; the count must be a `num`.
 
 ## Expressions and operators
 
@@ -166,6 +167,8 @@ write instead" version, see [Known gaps](/reference/known-gaps/).
 * 🟢 **List monitors** — `show()` and `hide()` toggle the project's list monitors.
 * 🟢 **Lists and dicts declared inside a script or proc** — hoisted and refilled on every
   run, rather than baked once like a top-level list.
+* 🟢 **Data files** — `import("./file.csv")` and `import("./file.json")` become a list or dict
+  literal at compile time. A CSV must be one row or one column, and JSON must be flat.
 * ⛔ **Slices** — `s[1:5:2]` parses and gets a naive type, and lowers to an empty literal.
   Silently wrong, not an error.
 
@@ -217,11 +220,12 @@ write instead" version, see [Known gaps](/reference/known-gaps/).
 * 🟢 **Namespacing and visibility** — imported symbols live under a namespace, only `public`
   ones cross, and imports are never re-exported.
 * 🟢 **Lowering imported code** — an imported proc is lowered into every target that calls
-  it, transitively, and an imported literal constant folds at the call site.
-* 🔴 **Imported module state** — a variable or list declared in an imported module does not
-  cross. Reading one is a check error (*only members with a literal initializer are
-  supported*); an imported proc that touches its own module's variable fails codegen with
-  `undeclared variable`.
+  it, transitively, and an imported value with a literal initializer folds at the use site.
+* 🔴 **Imported module state** — mutable state declared in an imported module does not cross.
+  Reading an imported list, or a value with no literal initializer, is a check error (*only
+  members with a literal initializer are supported*). A proc that touches its own module's
+  variable fails codegen with `undeclared variable` for any file importing that module, even
+  if the proc is never called. Writing to an imported value is ⛔ silently dropped.
 
 ## Structs
 
@@ -261,15 +265,15 @@ the compiler cannot enumerate — `Target`, `TouchTarget`, `DistanceTarget`, `Ob
   declared in the project automatically.
 * 🟢 **`clone`** — `onStart`, `create`, `delete`.
 * 🟡 **`list`** — `add`, `contains`, `length`, `clear`, `indexOf`, `show`, `hide` are 🟢;
-  `remove` is 🔴 (yields — it crashes the IR rather than reporting), `merge` is 🔴
-  (`katnip_list_merge`).
+  `remove` is 🔴 (yields), `merge` is 🔴 (`katnip_list_merge`).
 * 🟢 **`math`** — `pi`, `e`, `tau` fold to literals; the `MathOp` enum and `op` wrap
   `operator_mathop`, and `abs`, `floor`, `ceil`, `sqrt`, `sin`, `cos`, `tan`, `asin`,
-  `acos`, `atan`, `ln`, `log`, `epow` are `builds` procs over it. `pow` was removed rather
-  than fixed. No `random`, `min`, `max` or `round` yet.
+  `acos`, `atan`, `ln`, `log`, `epow` are `builds` procs over it. `random`, `round` and `mod`
+  bind their own blocks. `pow` was removed rather than fixed. No `min` or `max` yet.
 * 🟡 **`str`** — `contains` is 🟢; the rest of the string surface is not written yet.
 * 🔴 **`dict`** — `contains`, `length`, `keys`, `values`, `merge` all resolve to `katnip_*`
-  opcodes with no codegen metadata.
+  opcodes with no codegen metadata. `keys` and `values` assigned to a list build and leave it
+  ⛔ **empty**.
 * 🔴 **`console`** — `log`, `warn`, `error` are `katnip_*`; `input` is a yields proc.
 * 🟢 **Casts** — `Num`, `Str` and `Bool` are `builds` procs that inline the value unchanged.
   They are type-checker assertions, not runtime conversions. `List` was removed from the
@@ -314,20 +318,26 @@ Every enum-typed parameter above is reachable two ways: the namespaced member
 
 ## Tooling
 
-* 🟢 **CLI** — `katnip tokenize`, `parse`, `check`, `lower`, `build`, `help`.
+* 🟢 **CLI** — `katnip tokenize`, `parse`, `check`, `lower`, `build`, `decompile`, `help`.
+  * 🟡 `check` does not read `costume` or `sound` files, and `lower` reports them and data files
+    as missing.
+* 🟡 **Decompiler** — `katnip decompile` and `decompileSb3` turn a `.sb3` into `.knip` source.
+  Types come back as `any`, costumes and sounds are not recovered, and blocks with no Katnip
+  form become `# unsupported` comments.
 * 🟢 **Error reporting** — source spans with line and column, colorized output, multiple
   errors per run; analysis continues past syntax errors so semantic errors surface alongside
   them.
 * 🟢 **VS Code extension** — live diagnostics on type or on save with a configurable
-  debounce, syntax highlighting, language configuration, and a `Katnip: Build .sb3` command.
+  debounce, syntax highlighting, language configuration, keyword and same-file completion, and
+  a `Katnip: Build .sb3` command.
 * 🟢 **Warnings** — a non-blocking severity alongside errors; `no sprites declared, so this
   builds to an empty project` is the only one today.
 * 🟢 **Tests** — `node --test` cases across lexer, parser, semantic, callgraph, imports, IR,
-  and codegen, plus 7 `todo` cases in `gaps.test.ts` that assert each gap on this page is
+  and codegen, decompiler and API, plus 6 `todo` cases in `gaps.test.ts` that assert each gap on this page is
   still a gap, so closing one fails loudly. The imports case now passes.
-* 🟢 **Public API** — `checkSource`, `compileToIR` and `compileToSb3` exported for embedding,
-  with a pluggable import resolver.
-* 🔴 **Language server** — the extension shells the compiler directly; no LSP, no
+* 🟢 **Public API** — `checkSource`, `compileToIR`, `compileToSb3`, `decompileSb3` and
+  `decompileProject` exported for embedding, with pluggable import and asset readers.
+* 🔴 **Language server** — the extension runs the compiler directly; no LSP, no type-aware
   completion, hover, or go-to-definition.
 * 🔴 **Formatter**.
 * 🔴 **Source maps** — no mapping from a Scratch block back to a `.knip` line.
@@ -336,8 +346,9 @@ Every enum-typed parameter above is reachable two ways: the namespaced member
 
 ## Roadmap — nearest gaps, in rough order
 
-1. Close the silently-wrong gaps — `**`, slices, `range()` as a value, and tuple-pattern
-   assignment — since each builds a project that runs and lies.
+1. Close the silently-wrong gaps, namely `**`, slices, `range()` or `dict.keys()` as a value,
+   tuple-pattern assignment and writes to an imported value, since each builds a project that
+   runs and lies.
 2. Give the remaining `katnip_*` builtins real lowerings; `console`, `typeof`, `list.merge`
    and the dict methods are the widest hole.
 3. Lower imported module variables and lists, so a module can own state.

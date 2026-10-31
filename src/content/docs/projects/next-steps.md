@@ -40,19 +40,18 @@ state through parameters.
 
 ## Reach blocks the stdlib has not wrapped
 
-You did this in project 2. It generalises:
+An empty body plus `@opcode` says "this procedure *is* that Scratch block". The stdlib is
+written this way, as `.knip` files rather than compiler special-cases, so you can do it too:
 
 ```katnip
-proc random(@opcode = "operator_random", from: num, to: num) -> num {}
-proc round(@opcode = "operator_round", value: num) -> num {}
 proc x(@opcode = "motion_xposition") -> num {}
 proc y(@opcode = "motion_yposition") -> num {}
 
-private roll: num = random(1, 6);
+private atX: num = x();
 ```
 
-`operator_mathop` no longer needs this — `math` wraps it, so `math.sqrt`, `math.floor`,
-`math.ln` and the trig functions are all there. See [math](/stdlib/math-console/#math).
+Check the stdlib first. `math.random`, `math.round`, `math.sqrt` and the trig functions are
+already there. See [math](/stdlib/math-console/#math).
 
 This works for any opcode codegen has slot metadata for; unknown ones fail the build rather
 than emitting a broken project. See [Decorators](/language/decorators/#opcode).
@@ -81,12 +80,12 @@ not build**. Do not copy from them.
 [Known gaps](/reference/known-gaps/) is the page to read before planning anything
 ambitious. The short version:
 
-* four things build and are **silently wrong**: `**`, slices, `range()` used as a value,
-  and tuple-pattern assignment
+* a few things build and are **silently wrong**: `**`, slices, `range()` or `dict.keys()` used
+  as a value, tuple-pattern assignment, and writing to an imported value
 * a struct works through its fields; a whole struct can't be printed or compared
-* `console.*`, `typeof`, `list.merge`, and every dict method fail the build
+* `console.*`, `typeof`, `list.merge`, and `dict.contains` fail the build
 * `zip`/`enumerate` work in a `for` header, but fail the build used as a plain value
-* imports build — procedures and literal constants cross, module variables do not
+* imports build: procedures and literal values cross, module variables do not
 * an enum slot takes a member or a matching literal, but never a computed value
 
 [Feature status](/reference/feature-status/) has the full per-feature table if you want the
@@ -96,8 +95,8 @@ complete picture.
 
 * [VS Code extension](/toolchain/vscode/) — diagnostics as you type, and a build
   command, which beats a terminal round trip.
-* [CLI](/toolchain/cli/) — `tokenize`, `parse`, `lower` let you see exactly what each
-  stage did with your code.
+* [CLI](/toolchain/cli/): `tokenize`, `parse`, `lower` let you see exactly what each
+  stage did with your code, and `decompile` turns an existing `.sb3` into source.
 * [Embedding the compiler](/toolchain/api/) — `checkSource` and `compileToSb3` are
   exported, with a pluggable import resolver, if you want to build a playground or a
   different editor integration.

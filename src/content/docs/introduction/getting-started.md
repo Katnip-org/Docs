@@ -78,11 +78,11 @@ No semantic errors found.
 Now break it on purpose — change the `2` to `"two"`:
 
 ```
-Semantic Error: Argument 2 of 'say' expects 'num', got 'str'
-  at line 3, column 39
+Semantic Error: No overload of 'looks.say' matches these arguments
+  at line 3, column 9
     |
   3 |         looks.say("Hello from Katnip!", "two");
-    |                                         ^^^^^
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ```
 
 That is the entire pitch for Katnip in one screenshot. Change it back.

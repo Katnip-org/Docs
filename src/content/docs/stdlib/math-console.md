@@ -19,6 +19,18 @@ private turns: num = math.pi * 2;
 motion.forward(10 * math.pi);
 ```
 
+### Random, round and mod ✅
+
+```katnip
+math.random(low: num, high: num) -> num     ✅   # operator_random
+math.round(value: num) -> num               ✅   # operator_round
+math.mod(value1: num, value2: num) -> num   ✅   # operator_mod, the same block as %
+```
+
+```katnip
+private roll: num = math.random(1, 6);
+```
+
 ### Functions ✅
 
 `operator_mathop` is Scratch's one-block maths menu, and `math` wraps it twice: the raw
@@ -90,14 +102,13 @@ That is undefined for a negative base, so guard it if the base can go below zero
 
 ### What is missing
 
-No `random`, `min`, `max`, or `round`. Scratch has blocks for all of them; the stdlib has
-not wrapped them. Bind the opcodes directly:
+No `min` or `max`. Scratch has no block for either, so write them:
 
 ```katnip
-proc random(@opcode = "operator_random", from: num, to: num) -> num {}
-proc round(@opcode = "operator_round", value: num) -> num {}
-
-private roll: num = random(1, 6);
+proc max(a: num, b: num) -> num {
+    if (a > b) { return a; }
+    return b;
+}
 ```
 
 ## console

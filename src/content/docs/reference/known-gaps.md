@@ -14,17 +14,46 @@ and you will not be surprised later.
 
 | Mode | What you see | Examples |
 | --- | --- | --- |
-| 🔴 **Build error** | `check` passes, `build` fails loudly | `console.*`, `typeof`, dict methods, `list.merge` |
+| 🔴 **Build error** | `check` passes, `build` fails loudly | `console.*`, `typeof`, `dict.contains`, `list.merge` |
 | 🔴 **Check error** | `check` refuses it, with a message | a computed value in an enum slot |
 | 🟠 **Silent no-op** | builds, but the code is missing from the `.sb3` | top-level statements |
-| ⛔ **Silently wrong** | builds and runs, with a wrong answer | `**`, slices, `range()` as a value, tuple destructuring |
+| ⛔ **Silently wrong** | builds and runs, with a wrong answer | `**`, slices, `range()` or `dict.keys()` as a value, tuple destructuring, writing to an imported value |
 
-The last row is the one worth memorising. It is four items, listed first so you can check
-your code against them in a minute.
+The last row is the one worth memorising. It is short, and listed first so you can check your
+code against it in a minute.
 
 ---
 
 ## Recently closed
+
+### `forever` and `repeat`
+
+Both have source syntax now. See [Control flow](/language/control-flow/#forever).
+
+```katnip
+forever { motion.turn(1); }
+repeat (4) { motion.forward(10); }
+```
+
+### Data files
+
+`import("./levels.csv")` and `import("./scores.json")` load a flat file into a list or dict at
+compile time. See
+[Loading a list or dict from a file](/language/collections/#loading-a-list-or-dict-from-a-file).
+
+### Decompiling
+
+`katnip decompile game.sb3` writes `.knip` source. Costumes and sounds are not recovered; see
+[the CLI page](/toolchain/cli/#decompile) for the limits.
+
+### `math.random`, `math.round` and `math.mod`
+
+These no longer need a hand-written `@opcode` binding.
+
+### Comments inside multi-line statements
+
+A comment between tokens, such as after an element of a multi-line list, no longer causes a
+parse error.
 
 ### Costumes, sounds and the stage
 
@@ -167,19 +196,24 @@ pattern covers them.
 
 ---
 
-### `range()` only works in a `for` header
+### `range()`, `dict.keys()` and `dict.values()` as a list value
 
 ⛔ In a `for` header, `range()` is folded into the loop counter and works. Assigned to a
 list, it produces an empty list:
 
 ```katnip
 public counts: list<num> = range(5);     # builds; `counts` is empty at runtime
+private names = stock.keys();            # builds; `names` is empty at runtime
 ```
+
+`stock.values()` does the same. Used directly in another expression or a `for` header, `keys`
+and `values` fail the build with `no slot metadata` instead.
 
 `zip()` and `enumerate()` used as a value stop the build with `no slot metadata` instead,
 so they cannot slip through.
 
-**Instead:** use all three only in a `for` header, or fill the list yourself.
+**Instead:** use `range`, `zip` and `enumerate` only in a `for` header, or fill the list
+yourself. To walk a dict, use `for ((k, v), stock)`.
 
 ```katnip
 public counts: list<num> = [];
@@ -216,6 +250,21 @@ public lo: num = 0;
 public hi: num = 0;
 proc bounds() -> void { lo = 1; hi = 10; }
 ```
+
+---
+
+### Writing to an imported value
+
+⛔ Assigning to a value from an imported module builds, and the statement is dropped:
+
+```katnip
+import "./lib.knip";
+
+lib.SIDES = 4;      # builds; no block is emitted
+```
+
+**Instead:** keep state that changes in the entry file. See
+[Imported variables do not cross](#imported-variables-do-not-cross).
 
 ---
 
@@ -275,7 +324,7 @@ These fail loudly with a message, so there is nothing to hunt for.
 | `console.input` | `sensing.ask` + `sensing.answer` |
 | `typeof()` | — |
 | `zip()`, `enumerate()` **as a value** | use them in a `for` header, where both fold into the loop counter |
-| every `dict` method | keep a parallel key list |
+| `dict.contains`, `length`, `merge` | keep a parallel key list |
 | `list.merge` | `for (x, other) { self.add(x); }` |
 | `motion.getPosition` | bind `motion_xposition` / `motion_yposition` yourself |
 
@@ -287,7 +336,8 @@ fixed; there is no list cast.
 
 ### Dict methods are not lowered yet
 
-🔴 `contains`, `length`, `keys`, `values` and `merge` are waiting on codegen.
+🔴 `contains`, `length` and `merge` are waiting on codegen, and so are `keys` and `values`, with
+the silent exception [above](#range-dictkeys-and-dictvalues-as-a-list-value).
 
 Everything that is syntax rather than a method already works: dict literals, `d[key]`
 reads, `d[key] = v` writes, compound assignment, and `for ((k, v), d)` iteration.
@@ -309,9 +359,8 @@ proc put(key: str, value: num) -> void {
 ### `@lower = "yields"` procs are not lowered
 
 🔴 A `yields` procedure both performs an action and produces a value. The IR has no
-lowering for that shape yet, so the build stops with an internal
-`TypeError: Cannot read properties of undefined (reading 'mangled')` instead of a tidy
-message. Two stdlib procedures are affected: `list.remove` and `console.input`.
+lowering for that shape yet, so the build stops with `@lower = "yields" procs are not lowered
+yet`. Two stdlib procedures are affected: `list.remove` and `console.input`.
 
 **Instead:** for `console.input`, use `sensing.ask` + `sensing.answer`. For `list.remove`,
 rebuild the list:
@@ -346,9 +395,9 @@ Codegen treats the namespace as a variable name. Use the method form.
 
 ### Imported variables do not cross
 
-🔴 Imported *procedures* and *literal constants* build (see
-[Imports build now](#imports-build-now)). Imported **mutable state** does not, in either
-direction:
+🔴 Imported *procedures* and *values with a literal initializer* build (see
+[Imports build now](#imports-build-now)), with the value copied in at compile time. Imported
+**mutable state** does not cross:
 
 ```katnip
 # lib.knip
@@ -365,7 +414,8 @@ lib.bump();         # 🔴 build: "undeclared variable 'counter'"
 ```
 
 An imported procedure may take parameters and return a value, but it cannot touch a
-variable or list declared in its own module.
+variable or list declared in its own module. The error above appears for any file importing
+`lib`, even one that never calls `bump`.
 
 **Instead:** keep shared state in the entry file and pass it through parameters and return
 values.
@@ -435,13 +485,15 @@ The `ignored` forms (`#!` and `#[ ]#`) do work, in that they are dropped at the 
 
 | Feature | Note |
 | --- | --- |
-| `forever` / `repeat` syntax | IR nodes and codegen exist; no syntax reaches them. Use `while (true)` and `for` |
 | `break` / `continue` | Not yet — `break` is reported as an undefined name |
 | `switch` fallthrough | Not planned |
 | `switch` exhaustiveness over enums | Not checked — always write a `default` |
 | User-defined generics | Typevars are a stdlib facility |
-| `math.random` / `min` / `max` / `round` | Bind `operator_random` and `operator_round` yourself |
+| `math.min` / `math.max` | Write them with an `if` |
+| Optional `-> void` | A procedure must declare its return type, even `void` |
 | Language server, formatter, source maps | Later |
+| `check` on `costume` and `sound` files | The CLI's `check` does not read them; `build` and the editor do |
+| `lower` on projects with assets or data | The CLI's `lower` reports them as missing |
 
 ---
 

@@ -45,7 +45,7 @@ grows past a few hundred blocks, the things text has always been good at start t
 | Reuse code between projects | Backpack, sort of | `import` |
 | Catch a typo before running | Nothing | A type error, with line and column |
 | Review a change | Screenshots | A diff |
-| Enumerate over lists in parallel | 20 drags, and complicated setup | A `for` loop |n
+| Enumerate over lists in parallel | 20 drags, and complicated setup | A `for` loop |
 
 Katnip is not a different runtime. There is no interpreter, no VM, no plugin to install
 in Scratch. The compiler emits ordinary Scratch blocks, so anything you build stays
@@ -64,10 +64,13 @@ shareable, remixable, and readable by anyone who opens it in the editor.
   site as nested reporter blocks.
 * **Interpolated strings.** `f"{name} scored {score}"` folds into a `join` chain.
 * **Modules.** Split a project across files with `import` and `public` visibility.
+* **Data files.** `import("./levels.csv")` loads a CSV or JSON file into a list or dict at
+  compile time.
+* **A way back.** `katnip decompile` turns an existing `.sb3` into `.knip` source you can
+  read and edit.
 
 ## What Katnip is not
 
-* Not a Scratch **decompiler**. It goes one way: `.knip` → `.sb3`.
 * Not a way to escape Scratch's limits. There are no real function-local variables, no
   objects at runtime, no threads beyond Scratch's own. Katnip is a nicer way to write
   Scratch, not a way to stop writing Scratch.

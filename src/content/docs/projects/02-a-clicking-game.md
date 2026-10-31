@@ -6,7 +6,7 @@ title: "Project 2 — A clicking game"
 a second sprite keeps score.
 
 **You will learn:** globals vs sprite members, `if`/`switch`, `while`, broadcasts between
-sprites, string interpolation, and how to reach a Scratch block the stdlib has not wrapped.
+sprites, string interpolation, and how to pick random numbers.
 
 Make a file called `clicker.knip`.
 
@@ -34,40 +34,19 @@ sprite Cat {
 Build and run. Clicking the cat scores.
 
 `f"Score: {score}"` is an **interpolated string**. It compiles to Scratch's `join` block —
-and it is currently the practical way to put a number into a text slot, because the
-`Str()` cast is declared but not yet lowered.
+and it is the practical way to put a number into a text slot, because the `Str()` cast only
+changes the type the checker sees.
 
 ## Step 2 — Make it move
 
-A target that stays still is not a game. Scratch has a `pick random` block, but the
-standard library has not wrapped it. Bind the opcode yourself:
-
-```katnip
-proc random(@opcode = "operator_random", from: num, to: num) -> void {}
-```
-
-Almost — that needs to *return* a number:
-
-```katnip
-proc random(@opcode = "operator_random", from: num, to: num) -> num {}
-```
-
-An empty body plus `@opcode` says "this procedure *is* that Scratch block". The stdlib is
-written entirely this way — it is a set of `.knip` files, not compiler special-cases, so
-anything it declares you can declare too.
+A target that stays still is not a game. `math.random` is Scratch's `pick random` block:
 
 ```katnip
     events.onClick() {
         score += 10;
-        motion.goTo(random(-200, 200), random(-140, 140));
+        motion.goTo(math.random(-200, 200), math.random(-140, 140));
     }
 ```
-
-:::caution
-This only works for opcodes codegen has slot metadata for. `operator_random`,
-`operator_round` and `operator_mathop` are all fine. If an opcode is unknown, the build
-throws `no slot metadata` rather than emitting a broken project.
-:::
 
 ## Step 3 — Sprite state and a streak
 
@@ -80,7 +59,7 @@ sprite Cat {
     events.onClick() {
         streak += 1;
         score += 10 + streak;
-        motion.goTo(random(-200, 200), random(-140, 140));
+        motion.goTo(math.random(-200, 200), math.random(-140, 140));
     }
 }
 ```
@@ -116,7 +95,7 @@ proc award(points: num) -> void {
     events.onClick() {
         streak += 1;
         award(10 + streak);
-        motion.goTo(random(-200, 200), random(-140, 140));
+        motion.goTo(math.random(-200, 200), math.random(-140, 140));
     }
 ```
 
@@ -213,8 +192,6 @@ proc award(points: num) -> void {
     }
 }
 
-proc random(@opcode = "operator_random", from: num, to: num) -> num {}
-
 sprite Cat {
     private streak: num = 0;
 
@@ -238,7 +215,7 @@ sprite Cat {
     events.onClick() {
         streak += 1;
         award(10 + streak);
-        motion.goTo(random(-200, 200), random(-140, 140));
+        motion.goTo(math.random(-200, 200), math.random(-140, 140));
 
         switch (streak % 3) {
             case (0) { looks.setSize(70); }

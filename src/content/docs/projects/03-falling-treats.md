@@ -19,29 +19,26 @@ sprite Basket {
     events.onFlag() {
         looks.show();
         motion.setY(-140);
-        while (true) {
+        forever {
             motion.setX(sensing.mouseX());
         }
     }
 }
 ```
 
-`while (true)` is Katnip's `forever` — there is no `forever` keyword yet, though the IR
-has a node for it.
+`forever` is Scratch's forever block, and the loop keeps the basket under the mouse.
 
 No `wait` in this loop, and that is correct: `motion.setX` yields to the scheduler on its
-own, the same way a Scratch `forever` containing a motion block does. A `while (true)`
+own, the same way a Scratch `forever` containing a motion block does. A `forever`
 containing *only* arithmetic would hang the project.
 
 ## Step 2 — One falling treat
 
 ```katnip
-proc random(@opcode = "operator_random", from: num, to: num) -> num {}
-
 sprite Treat {
     events.onFlag() {
         looks.setSize(60);
-        motion.goTo(random(-200, 200), 160);
+        motion.goTo(math.random(-200, 200), 160);
         while (!sensing.touching("Basket")) {
             motion.changeY(-4);
         }
@@ -88,17 +85,17 @@ sprite Treat {
 
     events.onFlag() {
         looks.hide();
-        while (true) {
+        forever {
             clone.create("_myself_");
             wait(0.8);
         }
     }
 
     clone.onStart() {
-        speed = 3 + random(0, 3);
+        speed = 3 + math.random(0, 3);
         looks.setSize(60);
         looks.show();
-        motion.goTo(random(-200, 200), 160);
+        motion.goTo(math.random(-200, 200), 160);
 
         while (!sensing.touching("Basket")) {
             motion.changeY(-speed);
@@ -163,7 +160,7 @@ sprite Treat {
     private speed: num = 0;
 
     clone.onStart() {
-        kind = random(1, 3);
+        kind = math.random(1, 3);
         ...
         record(kind);
         clone.delete();
@@ -173,7 +170,7 @@ sprite Treat {
 
 Three things about lists:
 
-* **They are 1-indexed**, like Scratch's. `random(1, 3)` indexes `treatNames` directly.
+* **They are 1-indexed**, like Scratch's. `math.random(1, 3)` indexes `treatNames` directly.
 * **`treatNames` and `treatScores` are baked into the project file**, because every element
   is a literal. If any element needed a block to compute, the whole list would instead be
   rebuilt by a green-flag script — which matters when another script reads it early.
@@ -249,8 +246,6 @@ public treatNames: list<str> = ["fish", "milk", "yarn"];
 public treatScores: list<num> = [10, 5, 25];
 public history: list<str> = [];
 
-proc random(@opcode = "operator_random", from: num, to: num) -> num {}
-
 proc scoreFor(kind: num) -> num {
     return treatScores[kind];
 }
@@ -264,7 +259,7 @@ sprite Basket {
     events.onFlag() {
         looks.show();
         motion.setY(-140);
-        while (true) {
+        forever {
             motion.setX(sensing.mouseX());
         }
     }
@@ -290,11 +285,11 @@ sprite Treat {
     }
 
     clone.onStart() {
-        kind = random(1, 3);
-        speed = 3 + random(0, 3);
+        kind = math.random(1, 3);
+        speed = 3 + math.random(0, 3);
         looks.setSize(60);
         looks.show();
-        motion.goTo(random(-200, 200), 160);
+        motion.goTo(math.random(-200, 200), 160);
 
         while (!sensing.touching("Basket")) {
             motion.changeY(-speed);
