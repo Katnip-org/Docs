@@ -72,33 +72,16 @@ Trigonometry is in **degrees**, as everywhere in Scratch.
 Reach it through the namespace — `math.MathOp.SQRT`. A matching literal works too:
 `math.op("sqrt", 16)`.
 
-### There is no `math.pow` ⛔
-
-`math.pow` was **removed** from the stdlib; `math.pow(2, 3)` is now a check error,
-*Namespace 'math' has no member 'pow'*. The `**` operator still parses and is worse — it
-lowers silently to an empty literal, so you get a wrong answer with no error at all. See
-[Known gaps](/reference/known-gaps/#-is-not-lowered-yet).
-
-For a whole-number exponent, write the loop:
+### `math.pow` ✅
 
 ```katnip
-proc pow(base: num, exp: num) -> num {
-    private result: num = 1;
-    for (i, exp) {
-        result = result * base;
-    }
-    return result;
-}
+math.pow(base: num, exponent: num) -> num     ✅   # what ** calls
 ```
 
-For a fractional one, go through the natural log — this is exactly what the removed `pow`
-body did:
-
-```katnip
-private half: num = math.epow(0.5 * math.ln(16));    # 16 ** 0.5 -> 4
-```
-
-That is undefined for a negative base, so guard it if the base can go below zero.
+A whole exponent is computed by multiplying, so `b ** 10` is exact. A fractional one goes through
+`e ^ (exponent * ln(base))`, and a negative base with a fractional exponent gives `NaN`. It is a
+procedure that runs without a screen refresh, added to the project only if used. The `**`
+operator skips it when plain blocks will do; see [Powers](/language/operators/#powers).
 
 ### What is missing
 

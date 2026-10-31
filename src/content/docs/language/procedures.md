@@ -196,10 +196,15 @@ expect.
 
 * **Lists and dicts.** Rejected by the analyzer — the frame width is not statically known.
   Mutate a global list instead.
-* **Tuples**, in practice. The multi-slot frame is emitted, but a call site reads only the
-  first element, and a tuple-pattern assignment — `(a, b) = f();` — is dropped entirely, so
-  the call never runs. No error is reported. See
-  [Known gaps](/reference/known-gaps/#tuple-destructuring-is-half-built).
+
+A tuple return must be unpacked into plain variables with a pattern. Reading one any other way
+stops the build:
+
+```katnip
+proc bounds() -> (num, num) { return (1, 10); }
+
+(lo, hi) = bounds();
+```
 
 ## Recursion and proc-local variables
 

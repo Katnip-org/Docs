@@ -14,17 +14,32 @@ and you will not be surprised later.
 
 | Mode | What you see | Examples |
 | --- | --- | --- |
-| 🔴 **Build error** | `check` passes, `build` fails loudly | `console.*`, `typeof`, `dict.contains`, `list.merge` |
+| 🔴 **Build error** | `check` passes, `build` fails loudly | `console.*`, `typeof`, `dict.contains`, `list.merge`, top-level statements |
 | 🔴 **Check error** | `check` refuses it, with a message | a computed value in an enum slot |
-| 🟠 **Silent no-op** | builds, but the code is missing from the `.sb3` | top-level statements |
-| ⛔ **Silently wrong** | builds and runs, with a wrong answer | `**`, slices, `range()` or `dict.keys()` as a value, tuple destructuring, writing to an imported value |
 
-The last row is the one worth memorising. It is short, and listed first so you can check your
-code against it in a minute.
+A construct the compiler cannot lower stops the build with a message, rather than producing a
+project that runs and gives a wrong answer.
 
 ---
 
 ## Recently closed
+
+### `**`, slices and tuple patterns
+
+```katnip
+private area: num = side ** 2;          # also **= and math.pow
+looks.say(name[1:3]);                   # 1-based, stop-inclusive; lists too
+(lo, hi) = bounds();                    # also (a, b) = (b, a);
+```
+
+See [Operators](/language/operators/), [Lists and dicts](/language/collections/#slices) and
+[Procedures](/language/procedures/).
+
+### Calling twice in one statement
+
+`f(1) + f(2)` used to read the second result twice. Each call now keeps its own value. The one
+remaining limit: a value held across a **recursive** call in the same statement can be
+overwritten, so split that statement in two.
 
 ### `forever` and `repeat`
 
@@ -131,140 +146,16 @@ events.onFlag() {
 ### The `math` functions
 
 `math.abs`, `floor`, `ceil`, `sqrt`, `sin`, `cos`, `tan`, `asin`, `acos`, `atan`, `ln`,
-`log`, `epow` and the underlying `math.op` all build. `math.pow` was removed rather than
-fixed — see [`**` is not lowered yet](#-is-not-lowered-yet).
+`log`, `epow` and the underlying `math.op` all build. `math.pow` is back, and is what `**` calls.
 
 ---
 
-## Builds, but not what you meant
+## Limits to plan around
 
-### `**` is not lowered yet
+### `zip()` as a value
 
-⛔ The one to check for first.
-
-```katnip
-private x: num = base ** 2;      # compiles, produces an empty literal
-```
-
-Scratch has no power block, and Katnip has no `builds` procedure for `**` yet, so the IR
-lowers it to an empty literal without reporting anything. `**=` has the same gap.
-
-**Instead:**
-
-```katnip
-proc pow(base: num, exp: num) -> num {
-    private result: num = 1;
-    for (i, exp) {
-        result = result * base;
-    }
-    return result;
-}
-```
-
-For fractional powers, `math` now wraps `operator_mathop`:
-
-```katnip
-private root: num = math.sqrt(16);
-private half: num = math.epow(0.5 * math.ln(16));   # 16 ** 0.5
-```
-
----
-
-### Slices are not lowered yet
-
-⛔ `s[1:5:2]` parses and gets a type, but the IR emits an empty literal in its place, so the
-build succeeds and the value is empty.
-
-```katnip
-looks.say(name[1:3]);      # says nothing
-```
-
-**Instead:** walk characters and rebuild.
-
-```katnip
-proc slice(s: str, from: num, to: num) -> str {
-    private out: str = "";
-    for (i, to) {
-        if (i >= from) { out = out + s[i]; }
-    }
-    return out;
-}
-```
-
-`str.split`, `replace`, `toUpper` and `trim` are not in the stdlib yet; the same loop
-pattern covers them.
-
----
-
-### `range()`, `dict.keys()` and `dict.values()` as a list value
-
-⛔ In a `for` header, `range()` is folded into the loop counter and works. Assigned to a
-list, it produces an empty list:
-
-```katnip
-public counts: list<num> = range(5);     # builds; `counts` is empty at runtime
-private names = stock.keys();            # builds; `names` is empty at runtime
-```
-
-`stock.values()` does the same. Used directly in another expression or a `for` header, `keys`
-and `values` fail the build with `no slot metadata` instead.
-
-`zip()` and `enumerate()` used as a value stop the build with `no slot metadata` instead,
-so they cannot slip through.
-
-**Instead:** use `range`, `zip` and `enumerate` only in a `for` header, or fill the list
-yourself. To walk a dict, use `for ((k, v), stock)`.
-
-```katnip
-public counts: list<num> = [];
-
-events.onFlag() {
-    counts.clear();
-    for (i, range(5)) { counts.add(i); }
-}
-```
-
----
-
-### Tuple destructuring is half built
-
-⛔ The multi-slot return frame is emitted and the ABI carries the extra slots; the receiving
-side is the missing half. A tuple-pattern assignment is skipped, so the procedure is not
-called and both variables keep their old values:
-
-```katnip
-proc bounds() -> (num, num) { return (1, 10); }
-
-(lo, hi) = bounds();     # builds; no call is emitted, lo and hi are unchanged
-```
-
-A single-variable assignment from a tuple-returning proc reads only element one.
-
-Tuple *patterns* in a `for` header — `for ((k, v), stock)`, `zip`, `enumerate` — work
-fine; that is a different mechanism.
-
-**Instead:** return one value, or write results into globals.
-
-```katnip
-public lo: num = 0;
-public hi: num = 0;
-proc bounds() -> void { lo = 1; hi = 10; }
-```
-
----
-
-### Writing to an imported value
-
-⛔ Assigning to a value from an imported module builds, and the statement is dropped:
-
-```katnip
-import "./lib.knip";
-
-lib.SIDES = 4;      # builds; no block is emitted
-```
-
-**Instead:** keep state that changes in the entry file. See
-[Imported variables do not cross](#imported-variables-do-not-cross).
+🔴 Used as a value, `range()`, `zip()`, `enumerate()`, `dict.keys()` and `dict.values()` all stop
+the build. Use them in a `for` header instead, or walk a dict with `for ((k, v), stock)`.
 
 ---
 
@@ -293,16 +184,13 @@ looks.say(f"{p.x}, {p.y}");
 
 ---
 
-### Top-level statements are dropped
+### Statements outside a handler
 
-🟠 Handler, import, and switch placement are all checked. A statement the IR cannot place —
-executable code at the top level, outside any sprite — is dropped rather than reported.
+🔴 Executable code at the top level or directly in a sprite stops the build:
 
 ```katnip
-looks.say("hi");        # top level: builds, and is absent from the project
+looks.say("hi");        # this statement isn't allowed at the top level
 ```
-
-Put executable code inside an event handler.
 
 A file with no `sprite` at all gets a warning: `no sprites declared, so this builds to an
 empty project`. Warnings print but do not stop the build.
@@ -337,7 +225,7 @@ fixed; there is no list cast.
 ### Dict methods are not lowered yet
 
 🔴 `contains`, `length` and `merge` are waiting on codegen, and so are `keys` and `values`, with
-the silent exception [above](#range-dictkeys-and-dictvalues-as-a-list-value).
+they stop the build the same way when assigned to a list.
 
 Everything that is syntax rather than a method already works: dict literals, `d[key]`
 reads, `d[key] = v` writes, compound assignment, and `for ((k, v), d)` iteration.
@@ -410,6 +298,7 @@ public proc bump() -> void { counter += 1; }
 import "./lib.knip";
 
 lib.shared[1];      # 🔴 check: "only members with a literal initializer are supported"
+lib.SIDES = 4;      # 🔴 build: "a value from an imported module is read-only"
 lib.bump();         # 🔴 build: "undeclared variable 'counter'"
 ```
 

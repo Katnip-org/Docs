@@ -79,8 +79,7 @@ for (item, other) {
 :::danger
 **Every dict method is unimplemented.** All five resolve to `katnip_*` opcodes with no
 codegen metadata. `contains`, `length` and `merge` type-check and then fail the build.
-`keys` and `values` are worse when assigned to a list: `private k = stock.keys();` builds
-and leaves `k` **empty**.
+`keys` and `values` fail the build as well.
 :::
 
 ```katnip
@@ -130,9 +129,10 @@ proc has(key: str) -> bool {
 
 ```katnip
 greeting.contains(substring: str) -> bool   ✅   # operator_contains
+greeting.slice(start: num, stop: num, step: num = 1) -> str   ✅   # what s[a:b:c] calls
 ```
 
-That is the whole namespace so far. The rest of the string surface is not written yet.
+That is the whole namespace so far.
 
 Other string operations live elsewhere:
 
@@ -145,9 +145,8 @@ f"{greeting} {name}";       # interpolation, also join
 for (letter, greeting) { ... }
 ```
 
-There is no `split`, `replace`, `toUpper`, or `trim`. Slice syntax parses but lowers to an
-empty string — see [Known gaps](/reference/known-gaps/#slices-are-not-lowered-yet).
-Build what you need by walking characters:
+There is no `split`, `replace`, `toUpper`, or `trim`. Slices cover substrings, see
+[Slices](/language/collections/#slices). Build the rest by walking characters:
 
 ```katnip
 proc countChar(s: str, target: str) -> num {

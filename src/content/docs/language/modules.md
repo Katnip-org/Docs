@@ -77,7 +77,7 @@ import "./lib.knip";
 private a: num = lib.SIDES;      # ✅ folds to 3
 private b: num = lib.twice(4);   # ✅ the proc is lowered into this target
 private c: num = lib.shared[1];  # 🔴 check: only members with a literal initializer are supported
-lib.SIDES = 4;                   # ⛔ builds, and the assignment is silently dropped
+lib.SIDES = 4;                   # 🔴 build: a value from an imported module is read-only
 ```
 
 An imported procedure may take parameters and return a value, but it cannot touch a

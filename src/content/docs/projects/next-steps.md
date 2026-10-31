@@ -80,8 +80,6 @@ not build**. Do not copy from them.
 [Known gaps](/reference/known-gaps/) is the page to read before planning anything
 ambitious. The short version:
 
-* a few things build and are **silently wrong**: `**`, slices, `range()` or `dict.keys()` used
-  as a value, tuple-pattern assignment, and writing to an imported value
 * a struct works through its fields; a whole struct can't be printed or compared
 * `console.*`, `typeof`, `list.merge`, and `dict.contains` fail the build
 * `zip`/`enumerate` work in a `for` header, but fail the build used as a plain value
@@ -104,7 +102,6 @@ complete picture.
 ## Contribute
 
 The roadmap, in the maintainers' own priority order, is at the bottom of
-[Feature status](/reference/feature-status/). Closing the silently-wrong gaps is item one —
-a project that builds and lies is worse than one that refuses to build.
+[Feature status](/reference/feature-status/).
 
 [github.com/Katnip-org/Katnip](https://github.com/Katnip-org/Katnip)

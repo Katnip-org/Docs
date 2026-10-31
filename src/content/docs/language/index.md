@@ -55,8 +55,8 @@ can call one declared below it and a sprite can read a global declared after it.
 | **Sprite or stage body** | costumes, sounds, variables, procs, event handlers | Target-owned assets, state and scripts |
 | **Handler / proc body** | statements | Blocks in a script stack |
 
-A statement at the top level with nowhere to go is silently dropped by the IR — this is a
-known rough edge. Put executable code inside a handler.
+A statement at the top level, or directly in a sprite, stops the build. Put executable code
+inside a handler.
 
 ## Statements end with a semicolon
 

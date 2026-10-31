@@ -58,7 +58,7 @@ have to save to see the effect.
 :::caution
 The extension checks but the same [gaps](/reference/known-gaps/) apply. A file with no
 squiggles can still fail `katnip build`, with `console.log` and `dict.contains` being the two
-you will meet, or build and be silently wrong, as `**` and slices are.
+you will meet.
 :::
 
 ## What it is not

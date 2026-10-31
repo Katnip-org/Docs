@@ -13,6 +13,10 @@ proc forward(@opcode = "motion_movesteps", steps: num) -> void {}
 That means the standard library is readable, and you can see exactly which Scratch block
 any call becomes.
 
+Each file starts with `#! katnip: stdlib`. That first line lets the file check on its own, in the
+editor or with `katnip check`, using stdlib rules such as typevars and `@operator` on any
+procedure. A marked file cannot be built.
+
 ## The namespaces
 
 | Namespace | Covers | Status |

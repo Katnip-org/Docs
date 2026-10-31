@@ -42,8 +42,10 @@ Full detail in [Lists and dicts](/language/collections/).
 A fixed-length, positionally-typed group:
 
 ```katnip
-private pair: (num, num) = ...;
-private columns: (list<str>, list<num>) = zip(names, powers);
+proc bounds() -> (num, num) { return (1, 10); }
+
+(lo, hi) = bounds();
+(lo, hi) = (hi, lo);      # swap
 ```
 
 Tuple types are checked structurally — `(num, num)` and `(num, num)` are the same type no
@@ -51,10 +53,9 @@ matter where they were written. They are used for multi-value returns and for th
 `(key, value)` binding in a dict `for` loop.
 
 :::caution
-You cannot destructure a tuple returned from a procedure yet. A call site reads only the
-first element, and a tuple-pattern assignment — `(a, b) = f();` — is dropped entirely, so
-the call never runs and both variables keep their old values. No error is reported. See
-[Known gaps](/reference/known-gaps/#tuple-destructuring-is-half-built).
+A tuple can only be returned, unpacked with a pattern, or walked in a `for` header. Unpack with
+`(a, b) = f();`, where each target is a plain variable. Storing a tuple in a variable or a list
+stops the build.
 :::
 
 ## Unions

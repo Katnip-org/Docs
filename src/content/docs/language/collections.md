@@ -99,7 +99,7 @@ The `(name, count)` tuple pattern walks both columns together.
 :::danger
 `dict.contains`, `dict.length`, `dict.keys`, `dict.values` and `dict.merge` all resolve to
 `katnip_*` opcodes that **have no codegen** yet. They type-check and then fail the build,
-except that assigning `keys()` or `values()` to a list builds and leaves it **empty**.
+including when `keys()` or `values()` is assigned to a list.
 
 What works today: literals, `d[key]` reads, `d[key] = v` writes, and dict `for` loops.
 :::
@@ -166,6 +166,34 @@ whitespace, and blank lines are skipped.
 Data files are separate from the module form, `import "./lib.knip";`, which has no parentheses.
 Data can be loaded in an imported module too; the path is then relative to that module.
 
+## Slices
+
+`value[start:stop:step]` works on a `str` or a `list`. Like everything else here it is **1-based
+and stop-inclusive**, matching `range()`:
+
+```katnip
+private s: str = "abcdef";
+s[2:4];      # "bcd"
+s[:2];       # "ab"
+s[5:];       # "ef"
+s[1:5:2];    # "ace"
+s[::-1];     # "fedcba"
+
+private part = scores[2:3];       # a new list
+for (x, scores[2:]) { ... }       # a slice can be walked
+scores = scores[2:];              # or replace the list
+```
+
+A bound past the end stops at the end. A step of 0 is an error. If the step is computed rather
+than a literal, both bounds are required, because an omitted bound depends on its sign. A dict
+cannot be sliced, and neither can a list of structs.
+
+A string slice with literal bounds covering at most 8 letters, such as `s[2:4]`, becomes `letter of`
+and `join` blocks. Any other slice calls a procedure, added once to the project, which runs
+without a screen refresh.
+
+A slice is the only whole-list value so far: `a = b;`, `private c = a;` and `a + b` stop the build.
+
 ## Strings behave like sequences
 
 ```katnip
@@ -176,9 +204,7 @@ private has: bool = greeting.contains("at");
 for (letter, greeting) { ... }
 ```
 
-There is no slicing. `s[1:5:2]` parses and gets a naive type, and then lowers to an **empty
-string** — it builds, and the value is wrong. See
-[Known gaps](/reference/known-gaps/#slices-are-not-lowered-yet).
+See [Slices](#slices) for `greeting[2:4]`.
 
 ## Generic helpers
 
@@ -187,10 +213,8 @@ private paired: (list<str>, list<num>) = zip(names, powers);
 private tagged: (list<num>, list<str>) = enumerate(names);
 ```
 
-The types infer correctly — `T` binds from the arguments. Used **as a value** like this,
-both are `katnip_*` builtins with no codegen, so this type-checks and then fails the build
-with `no slot metadata`. `range()` as a value is worse: it builds, and produces an **empty
-list**.
+The types infer correctly, as `T` binds from the arguments. Used **as a value** like this, all
+three of `zip`, `enumerate` and `range` type-check and then fail the build.
 
 Use all three directly in a `for` header instead, where they fold into the loop counter and
 never build anything:

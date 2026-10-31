@@ -111,7 +111,7 @@ scores[2] += 1;
 stock["apple"] += 3;
 ```
 
-`**=` parses but does not work — see [Known gaps](/reference/known-gaps/#-is-not-lowered-yet).
+`**=` works too, and calls [`math.pow`](/stdlib/math-console/#mathpow-).
 
 ## Showing a variable on the stage
 

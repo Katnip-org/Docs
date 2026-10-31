@@ -45,8 +45,8 @@ Lex, parse, and analyze. Prints `No semantic errors found.` or the diagnostics. 
 :::caution
 `check` passing does **not** mean `build` will succeed, and it does not mean the project is
 right. Some features are complete in the analyzer and absent from the IR — `console.*`,
-`typeof` and most dict methods fail the build; `**`, slices and tuple destructuring build and
-are silently wrong. See [Known gaps](/reference/known-gaps/).
+`typeof`, most dict methods and top-level statements fail the build. See
+[Known gaps](/reference/known-gaps/).
 
 `check` also does not read `costume` or `sound` files, so a missing one only shows up in
 `build` or the editor. Missing `import()` data files are reported.
